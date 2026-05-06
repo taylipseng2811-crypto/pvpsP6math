@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>P6 Circles — Maths Explorer</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0F1B2D;
+  --bg2: #162236;
+  --bg3: #1E3050;
+  --card: #1A2C45;
+  --card2: #213450;
+  --accent: #00D4FF;
+  --accent2: #FF6B6B;
+  --accent3: #FFD93D;
+  --accent4: #6BCB77;
+  --accent5: #C77DFF;
+  --text: #E8F4FD;
+  --muted: #7A9BB5;
+  --border: rgba(0,212,255,0.18);
+  --r: 16px;
+  --rl: 22px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── STARS BG ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 30% 60%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 55% 15%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 75% 45%, rgba(255,255,255,0.25) 0%, transparent 100%),
+    radial-gradient(1px 1px at 90% 80%, rgba(255,255,255,0.35) 0%, transparent 100%),
+    radial-gradient(1px 1px at 20% 85%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 65% 72%, rgba(255,255,255,0.4) 0%, transparent 100%);
+  pointer-events: none;
+}
+body > * { position: relative; z-index: 1; }
+
+/* ── HEADER ── */
+.header {
+  text-align: center;
+  padding: 2.2rem 1rem 1rem;
+  position: relative;
+}
+.header h1 {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(2rem, 7vw, 3.2rem);
+  color: var(--accent);
+  text-shadow: 0 0 30px rgba(0,212,255,0.5);
+  letter-spacing: 1px;
+  line-height: 1.1;
+}
+.header .sub {
+  font-size: 1rem;
+  color: var(--muted);
+  font-weight: 600;
+  margin-top: 0.3rem;
+}
+.circle-deco {
+  display: inline-block;
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  border: 4px solid var(--accent);
+  position: absolute;
+  animation: spin 12s linear infinite;
+}
+.circle-deco::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.deco1 { top: 1rem; left: 4%; animation-duration: 10s; border-color: var(--accent3); }
+.deco1::before { background: var(--accent3); }
+.deco2 { top: 1.5rem; right: 4%; animation-duration: 15s; border-color: var(--accent2); animation-direction: reverse; }
+.deco2::before { background: var(--accent2); }
+
+/* ── PROGRESS DOTS ── */
+.progress-bar {
+  display: flex; justify-content: center; gap: 10px;
+  padding: 0.8rem 1rem 1.2rem;
+  flex-wrap: wrap;
+}
+.prog-dot {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; font-weight: 800; color: var(--muted);
+  cursor: pointer;
+  transition: all 0.25s;
+  background: var(--card);
+}
+.prog-dot.active { border-color: var(--accent); color: var(--accent); background: rgba(0,212,255,0.1); box-shadow: 0 0 12px rgba(0,212,255,0.3); }
+.prog-dot.done { border-color: var(--accent4); background: rgba(107,203,119,0.15); color: var(--accent4); }
+
+/* ── TABS ── */
+.tabs {
+  display: flex; justify-content: center; gap: 8px;
+  padding: 0 1rem 1.2rem; flex-wrap: wrap;
+}
+.tab {
+  font-family: 'Fredoka One', cursive;
+  font-size: 0.95rem; letter-spacing: 0.5px;
+  padding: 0.5rem 1.15rem;
+  border-radius: 50px;
+  border: 2px solid var(--border);
+  background: var(--card);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.tab:hover { border-color: var(--accent); color: var(--accent); }
+.tab.active { background: var(--accent); color: var(--bg); border-color: var(--accent); box-shadow: 0 0 16px rgba(0,212,255,0.35); }
+
+/* ── SECTIONS ── */
+.section { display: none; max-width: 860px; margin: 0 auto; padding: 0 1rem 3rem; }
+.section.active { display: block; }
+
+/* ── CARD ── */
+.card {
+  background: var(--card);
+  border-radius: var(--rl);
+  border: 1px solid var(--border);
+  padding: 1.4rem 1.5rem;
+  margin-bottom: 1.2rem;
+}
+.card h2 {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.4rem;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.6rem;
+}
+.card p { font-size: 1rem; line-height: 1.75; color: #C8DCF0; }
+.card p strong { color: var(--accent3); }
+.card p em { color: var(--accent); font-style: normal; font-weight: 700; }
+
+/* ── HIGHLIGHT BOX ── */
+.hbox {
+  border-radius: var(--r);
+  padding: 1rem 1.2rem;
+  margin: 0.8rem 0;
+  border-left: 5px solid;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+.hbox.blue { background: rgba(0,212,255,0.07); border-color: var(--accent); color: #C4ECF8; }
+.hbox.yellow { background: rgba(255,217,61,0.08); border-color: var(--accent3); color: #FFF0B0; }
+.hbox.red { background: rgba(255,107,107,0.08); border-color: var(--accent2); color: #FFCECE; }
+.hbox.green { background: rgba(107,203,119,0.08); border-color: var(--accent4); color: #C2F0C8; }
+.hbox.purple { background: rgba(199,125,255,0.08); border-color: var(--accent5); color: #E8CCFF; }
+.hbox strong { font-weight: 800; }
+
+/* ── SVG CIRCLES ── */
+.svg-wrap { display: flex; justify-content: center; margin: 1rem 0; }
+.svg-wrap svg { max-width: 100%; }
+
+/* ── FORMULA BADGE ── */
+.formula {
+  display: inline-block;
+  background: var(--bg3);
+  border: 2px solid var(--accent);
+  border-radius: 12px;
+  padding: 0.6rem 1.2rem;
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.3rem;
+  color: var(--accent);
+  letter-spacing: 0.5px;
+  margin: 0.3rem 0;
+  box-shadow: 0 0 16px rgba(0,212,255,0.15);
+}
+.formula.yellow { border-color: var(--accent3); color: var(--accent3); box-shadow: 0 0 16px rgba(255,217,61,0.15); }
+.formula.green { border-color: var(--accent4); color: var(--accent4); box-shadow: 0 0 16px rgba(107,203,119,0.15); }
+.formula.red { border-color: var(--accent2); color: var(--accent2); }
+.formula.purple { border-color: var(--accent5); color: var(--accent5); }
+
+/* ── STEP BOXES ── */
+.steps { display: flex; flex-direction: column; gap: 0.7rem; margin: 0.8rem 0; }
+.step {
+  display: flex; gap: 12px; align-items: flex-start;
+  background: var(--card2); border-radius: 12px; padding: 0.85rem 1rem;
+}
+.step-num {
+  width: 30px; height: 30px; min-width: 30px;
+  border-radius: 50%; background: var(--accent);
+  color: var(--bg); font-weight: 800; font-size: 0.9rem;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Fredoka One', cursive;
+}
+.step-num.y { background: var(--accent3); }
+.step-num.g { background: var(--accent4); }
+.step-num.r { background: var(--accent2); }
+.step-num.p { background: var(--accent5); }
+.step-text { font-size: 0.95rem; line-height: 1.65; color: #C8DCF0; flex: 1; }
+.step-text strong { color: var(--accent3); }
+
+/* ── INTERACTIVE SLIDER ── */
+.slider-section { margin: 1rem 0; }
+.slider-row { display: flex; align-items: center; gap: 12px; margin-bottom: 0.6rem; }
+.slider-row label { font-weight: 700; font-size: 0.9rem; color: var(--muted); min-width: 80px; }
+.slider-row input[type=range] { flex: 1; accent-color: var(--accent); height: 6px; }
+.slider-val { font-family: 'Fredoka One', cursive; font-size: 1.1rem; color: var(--accent); min-width: 55px; text-align: right; }
+.result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-top: 0.8rem; }
+@media(max-width:460px){ .result-grid { grid-template-columns: 1fr; } }
+.result-card {
+  background: var(--bg3); border-radius: 12px; padding: 0.8rem 1rem;
+  border: 1px solid var(--border); text-align: center;
+}
+.result-card .rc-label { font-size: 0.78rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+.result-card .rc-val { font-family: 'Fredoka One', cursive; font-size: 1.5rem; }
+
+/* ── WORKED EXAMPLE ── */
+.worked-q {
+  background: var(--bg3);
+  border-radius: var(--r);
+  padding: 1rem 1.2rem;
+  border: 2px dashed var(--accent3);
+  margin: 0.8rem 0;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #FFF0B0;
+}
+.reveal-btn {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1rem; letter-spacing: 0.3px;
+  padding: 0.6rem 1.4rem;
+  border-radius: 50px;
+  border: 2px solid var(--accent3);
+  background: rgba(255,217,61,0.1);
+  color: var(--accent3);
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 0.5rem;
+}
+.reveal-btn:hover { background: var(--accent3); color: var(--bg); }
+.reveal-content { display: none; }
+.reveal-content.open { display: block; margin-top: 0.8rem; }
+
+/* ── QUIZ ── */
+.quiz-q { font-size: 1.05rem; font-weight: 700; color: #E0F0FF; margin-bottom: 0.9rem; line-height: 1.6; }
+.quiz-opts { display: flex; flex-direction: column; gap: 0.6rem; }
+.qbtn {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.95rem; font-weight: 700;
+  padding: 0.75rem 1.1rem;
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  background: var(--card2);
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.18s;
+}
+.qbtn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); background: rgba(0,212,255,0.07); }
+.qbtn.correct { background: rgba(107,203,119,0.18); border-color: var(--accent4); color: var(--accent4); }
+.qbtn.wrong { background: rgba(255,107,107,0.15); border-color: var(--accent2); color: var(--accent2); }
+.qfb { margin-top: 0.7rem; font-size: 0.95rem; font-weight: 700; min-height: 1.4rem; }
+.quiz-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 1.1rem; }
+.quiz-nav button {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1rem; letter-spacing: 0.3px;
+  padding: 0.5rem 1.4rem;
+  border-radius: 50px;
+  border: 2px solid var(--accent);
+  background: var(--accent);
+  color: var(--bg);
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.quiz-nav button:disabled { opacity: 0.3; cursor: default; }
+.score-badge { font-family: 'Fredoka One', cursive; font-size: 1.4rem; color: var(--accent3); }
+.qprog { font-size: 0.82rem; color: var(--muted); margin-top: 0.5rem; }
+
+/* ── PRACTICE CHECKER ── */
+.practice-q {
+  background: var(--bg3);
+  border-radius: var(--r);
+  border: 2px dashed rgba(199,125,255,0.4);
+  padding: 1rem 1.2rem;
+  margin: 0.8rem 0;
+}
+.practice-q .pq-label { font-size: 0.8rem; font-weight: 800; color: var(--accent5); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.4rem; }
+.practice-q .pq-text { font-size: 1rem; color: #E0D0FF; font-weight: 600; line-height: 1.65; }
+.input-row { display: flex; align-items: center; gap: 10px; margin-top: 0.7rem; flex-wrap: wrap; }
+.pq-input {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.1rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 10px;
+  border: 2px solid var(--accent5);
+  background: var(--bg);
+  color: var(--text);
+  width: 130px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.pq-input:focus { border-color: var(--accent); }
+.pq-unit { color: var(--muted); font-weight: 700; font-size: 0.9rem; }
+.pq-btn {
+  font-family: 'Fredoka One', cursive;
+  font-size: 0.95rem;
+  padding: 0.5rem 1.2rem;
+  border-radius: 50px;
+  border: 2px solid var(--accent5);
+  background: rgba(199,125,255,0.12);
+  color: var(--accent5);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.pq-btn:hover { background: var(--accent5); color: var(--bg); }
+.pq-fb { margin-top: 0.5rem; font-size: 0.9rem; font-weight: 700; min-height: 1.3rem; }
+.pq-fb.ok { color: var(--accent4); }
+.pq-fb.err { color: var(--accent2); }
+
+/* ── CHEATSHEET ── */
+.cheat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+.cheat-card {
+  background: var(--card2);
+  border-radius: var(--r);
+  border: 1px solid var(--border);
+  padding: 1.1rem;
+  text-align: center;
+}
+.cheat-card .ch-emoji { font-size: 2rem; margin-bottom: 0.4rem; }
+.cheat-card .ch-title { font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--muted); letter-spacing: 0.4px; margin-bottom: 0.5rem; }
+
+/* ── END CARD ── */
+.end-card { text-align: center; padding: 2rem; }
+.end-card .big-emoji { font-size: 4rem; margin-bottom: 0.5rem; }
+.end-card h2 { font-family: 'Fredoka One', cursive; font-size: 2rem; color: var(--accent); margin-bottom: 0.5rem; }
+.stars-row { font-size: 2rem; letter-spacing: 6px; margin: 0.5rem 0; }
+.restart-btn {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.1rem;
+  padding: 0.65rem 2rem;
+  border-radius: 50px;
+  background: var(--accent);
+  border: none; color: var(--bg);
+  cursor: pointer; margin-top: 1rem;
+  box-shadow: 0 0 20px rgba(0,212,255,0.3);
+}
+
+/* ── MISC ── */
+.section-tag {
+  display: inline-block;
+  font-size: 0.72rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 1.2px;
+  padding: 2px 10px; border-radius: 50px;
+  margin-bottom: 0.5rem;
+  background: rgba(0,212,255,0.12);
+  color: var(--accent);
+  border: 1px solid rgba(0,212,255,0.25);
+}
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media(max-width:520px){ .two-col { grid-template-columns: 1fr; } }
+
+.tip-box {
+  background: rgba(255,217,61,0.07);
+  border: 1.5px solid rgba(255,217,61,0.3);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  color: #FFF0B0;
+  margin: 0.7rem 0;
+  display: flex; gap: 8px; align-items: flex-start;
+}
+.tip-box::before { content: '💡'; font-size: 1rem; min-width: 1.2rem; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="circle-deco deco1"></div>
+  <div class="circle-deco deco2"></div>
+  <h1>⭕ Circles Explorer</h1>
+  <div class="sub">P6 Maths · Singapore Syllabus · Step by step, no rush!</div>
+</div>
+
+<div class="tabs" role="tablist">
+  <button class="tab active" onclick="showTab('parts',this)">🔵 Parts</button>
+  <button class="tab" onclick="showTab('circ',this)">📏 Circumference</button>
+  <button class="tab" onclick="showTab('area',this)">📐 Area</button>
+  <button class="tab" onclick="showTab('half',this)">🌗 Half & Quarter</button>
+  <button class="tab" onclick="showTab('practice',this)">✏️ Practice</button>
+  <button class="tab" onclick="showTab('quiz',this)">🎯 Quiz</button>
+  <button class="tab" onclick="showTab('cheat',this)">📋 Cheat Sheet</button>
+</div>
+
+<!-- ═══════════════ PARTS ═══════════════ -->
+<div class="section active" id="section-parts">
+
+  <div class="card">
+    <div class="section-tag">Step 1 — Know Your Circle</div>
+    <h2 style="color:var(--accent);">Parts of a Circle</h2>
+    <p>Every circle has special parts. Click the <strong>glowing labels</strong> on the circle to learn what they mean!</p>
+  </div>
+
+  <div class="card">
+    <div class="svg-wrap">
+      <svg viewBox="0 0 420 340" width="420" xmlns="http://www.w3.org/2000/svg">
+        <!-- Circle -->
+        <circle cx="210" cy="170" r="120" fill="rgba(0,212,255,0.07)" stroke="#00D4FF" stroke-width="3"/>
+        <!-- Centre dot -->
+        <circle cx="210" cy="170" r="6" fill="#FFD93D"/>
+        <!-- Radius line -->
+        <line x1="210" y1="170" x2="330" y2="170" stroke="#FFD93D" stroke-width="3" stroke-dasharray="6,4"/>
+        <!-- Diameter line -->
+        <line x1="90" y1="170" x2="330" y2="170" stroke="#FF6B6B" stroke-width="2.5" opacity="0" id="diam-line"/>
+        <!-- Circumference arrow hint -->
+        <path d="M210,50 A120,120 0 0,1 330,170" stroke="#6BCB77" stroke-width="3" fill="none" stroke-dasharray="10,5" opacity="0" id="circ-arc"/>
+        <!-- Chord line -->
+        <line x1="130" y1="90" x2="330" y2="170" stroke="#C77DFF" stroke-width="2.5" opacity="0" id="chord-line"/>
+
+        <!-- Labels clickable -->
+        <!-- Centre -->
+        <g onclick="showPartInfo('centre')" style="cursor:pointer">
+          <circle cx="210" cy="170" r="22" fill="rgba(255,217,61,0.15)" stroke="#FFD93D" stroke-width="1.5">
+            <animate attributeName="r" values="20;24;20" dur="2.5s" repeatCount="indefinite"/>
+          </circle>
+          <text x="210" y="140" text-anchor="middle" font-family="Fredoka One,cursive" font-size="14" fill="#FFD93D">Centre</text>
+        </g>
+
+        <!-- Radius label -->
+        <g onclick="showPartInfo('radius')" style="cursor:pointer">
+          <rect x="248" y="153" width="74" height="28" rx="14" fill="rgba(255,217,61,0.15)" stroke="#FFD93D" stroke-width="1.5">
+            <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite"/>
+          </rect>
+          <text x="285" y="172" text-anchor="middle" font-family="Fredoka One,cursive" font-size="14" fill="#FFD93D">Radius</text>
+        </g>
+
+        <!-- Diameter label -->
+        <g onclick="showPartInfo('diameter')" style="cursor:pointer">
+          <rect x="130" y="188" width="84" height="28" rx="14" fill="rgba(255,107,107,0.15)" stroke="#FF6B6B" stroke-width="1.5">
+            <animate attributeName="opacity" values="0.7;1;0.7" dur="2.2s" repeatCount="indefinite"/>
+          </rect>
+          <text x="172" y="207" text-anchor="middle" font-family="Fredoka One,cursive" font-size="14" fill="#FF6B6B">Diameter</text>
+        </g>
+
+        <!-- Circumference label -->
+        <g onclick="showPartInfo('circumference')" style="cursor:pointer">
+          <rect x="288" y="68" width="120" height="28" rx="14" fill="rgba(107,203,119,0.15)" stroke="#6BCB77" stroke-width="1.5">
+            <animate attributeName="opacity" values="0.7;1;0.7" dur="1.9s" repeatCount="indefinite"/>
+          </rect>
+          <text x="348" y="87" text-anchor="middle" font-family="Fredoka One,cursive" font-size="13" fill="#6BCB77">Circumference</text>
+        </g>
+        <line x1="298" y1="82" x2="262" y2="100" stroke="#6BCB77" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+        <!-- Pi label -->
+        <g onclick="showPartInfo('pi')" style="cursor:pointer">
+          <rect x="10" y="68" width="60" height="28" rx="14" fill="rgba(199,125,255,0.15)" stroke="#C77DFF" stroke-width="1.5">
+            <animate attributeName="opacity" values="0.7;1;0.7" dur="2.4s" repeatCount="indefinite"/>
+          </rect>
+          <text x="40" y="87" text-anchor="middle" font-family="Fredoka One,cursive" font-size="18" fill="#C77DFF">π</text>
+        </g>
+
+        <!-- Outer circle highlight for circumference -->
+        <circle cx="210" cy="170" r="120" fill="none" stroke="#6BCB77" stroke-width="4" stroke-dasharray="15,8" opacity="0.3"/>
+      </svg>
+    </div>
+
+    <div id="partInfoBox" style="min-height:80px; background:var(--bg3); border-radius:14px; padding:1rem 1.2rem; border:1.5px solid var(--border); font-size:0.98rem; line-height:1.7; color:#C8DCF0; display:flex; align-items:center; justify-content:center; text-align:center;">
+      👆 Tap a <span style="color:var(--accent3);font-weight:800;">glowing label</span> on the circle to learn about it!
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="color:var(--accent3);">Key Relationships</h2>
+    <div class="two-col">
+      <div class="hbox blue">
+        <strong>Diameter = 2 × Radius</strong><br>
+        If radius = 5 cm, diameter = 10 cm
+      </div>
+      <div class="hbox yellow">
+        <strong>Radius = Diameter ÷ 2</strong><br>
+        If diameter = 14 cm, radius = 7 cm
+      </div>
+    </div>
+    <div class="tip-box">Always check — does the question give you the <strong>radius</strong> or the <strong>diameter</strong>? This is the most common mistake!</div>
+  </div>
+
+  <div class="card">
+    <h2 style="color:var(--accent5);">Quick Check — Radius or Diameter?</h2>
+    <p style="margin-bottom:0.8rem;">A circle has a <strong>radius of 7 cm</strong>. What is its diameter?</p>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <button class="qbtn" onclick="rdCheck(this,false)">7 cm</button>
+      <button class="qbtn" onclick="rdCheck(this,true)">14 cm</button>
+      <button class="qbtn" onclick="rdCheck(this,false)">3.5 cm</button>
+      <button class="qbtn" onclick="rdCheck(this,false)">49 cm</button>
+    </div>
+    <div id="rdFb" class="qfb"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ CIRCUMFERENCE ═══════════════ -->
+<div class="section" id="section-circ">
+
+  <div class="card">
+    <div class="section-tag">Step 2 — Going Around</div>
+    <h2 style="color:var(--accent);">Circumference of a Circle</h2>
+    <p>The <em>circumference</em> is the <strong>distance all the way around</strong> the circle. Think of it like the length of a fence around a round field.</p>
+    <div class="hbox blue" style="text-align:center; margin-top:1rem;">
+      <div style="font-size:0.85rem; color:var(--muted); margin-bottom:6px;">THE FORMULA</div>
+      <span class="formula">C = π × d</span> &nbsp;&nbsp; or &nbsp;&nbsp; <span class="formula">C = 2 × π × r</span>
+      <div style="margin-top:8px; font-size:0.88rem; color:#A0CCE0;">where <strong style="color:var(--accent)">π ≈ 3.14</strong> (or use <strong style="color:var(--accent)">22/7</strong> when the diameter/radius is a multiple of 7)</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="color:var(--accent3);">🎛️ Try it — Spin the Slider!</h2>
+    <p style="margin-bottom:1rem;">Move the slider to change the <strong>radius</strong> and see the circumference update instantly.</p>
+    <div class="slider-section">
+      <div class="slider-row">
+        <label>Radius (r)</label>
+        <input type="range" min="1" max="20" value="7" id="circSlider" oninput="updateCirc()">
+        <span class="slider-val" id="circR">7 cm</span>
+      </div>
+    </div>
+    <div class="result-grid">
+      <div class="result-card">
+        <div class="rc-label">Diameter (d)</div>
+        <div class="rc-val" id="circD" style="color:var(--accent2);">14 cm</div>
+      </div>
+      <div class="result-card">
+        <div class="rc-label">Circumference (C)</div>
+        <div class="rc-val" id="circC" style="color:var(--accent);">44 cm</div>
+      </div>
+    </div>
+    <div style="margin-top:1rem; background:var(--bg3); border-radius:12px; padding:0.85rem 1rem; font-size:0.9rem; color:#A0CCE0; font-weight:600;" id="circWorking"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="color:var(--accent4);">📝 Worked Example</h2>
+    <div class="worked-q">
+      A circle has a diameter of 14 cm. Find its circumference. (Use π = 22/7)
+    </div>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-text">Identify what is given: <strong>Diameter = 14 cm</strong></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-text">Write the formula: <strong>C = π × d</strong></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-text">Substitute: C = 22/7 × 14</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-text">Simplify: 14 ÷ 7 = 2, so C = 22 × 2 = <strong>44 cm</strong></div></div>
+    </div>
+    <div class="tip-box">When diameter is a multiple of 7 (7, 14, 21, 28…), use <strong>π = 22/7</strong>. Otherwise use <strong>π = 3.14</strong>.</div>
+  </div>
+
+  <div class="card">
+    <h2 style="color:var(--accent2);">🧠 Your Turn!</h2>
+    <div class="worked-q">A wheel has a radius of 5 cm. Find its circumference. (Use π = 3.14)</div>
+    <button class="reveal-btn" onclick="toggleReveal('rev1',this)">👀 Show Working</button>
+    <div class="reveal-content" id="rev1">
+      <div class="steps">
+        <div class="step"><div class="step-num y">1</div><div class="step-text">Given: <strong>radius = 5 cm</strong></div></div>
+        <div class="step"><div class="step-num y">2</div><div class="step-text">Formula: <strong>C = 2 × π × r</strong></div></div>
+        <div class="step"><div class="step-num y">3</div><div class="step-text">C = 2 × 3.14 × 5</div></div>
+        <div class="step"><div class="step-num y">4</div><div class="step-text">C = 6.28 × 5 = <strong>31.4 cm ✅</strong></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ AREA ═══════════════ -->
+<div class="section" id="section-area">
+
+  <div class="card">
+    <div class="section-tag">Step 3 — How Much Space?</div>
+    <h2 style="color:var(--accent4);">Area of a Circle</h2>
+    <p>The <em>area</em> is the <strong>space inside</strong> the circle. Think of painting the inside of a round plate — how much paint do you need?</p>
+    <div class="hbox green" style="text-align:center; margin-top:1rem;">
+      <div style="font-size:0.85rem; color:var(--muted); margin-bottom:6px;">THE FORMULA</div>
+      <span class="formula green">A = π × r²</span>
+      <div style="margin-top:8px; font-size:0.88rem; color:#A0D8A0;">r² means <strong>r × r</strong> (radius times itself)</div>
+    </div>
+    <div class="tip-box">Area always uses the <strong>RADIUS</strong> (not diameter). If given a diameter, halve it first!</div>
+  </div>
+
+  <div class="card">
+    <h2 style="color:var(--accent3);">🎛️ Area Explorer</h2>
+    <div class="slider-section">
+      <div class="slider-row">
+        <label>Radius (r)</label>
+        <input type="range" min="1" max="15" value="7" id="areaSlider" oninput="updateArea()">
+        <span class="slider-val" id="areaR">7 cm</span>
+      </div>
+    </div>
+    <div class="svg-wrap" style="margin:0.5rem 0;">
+      <svg viewBox="0 0 300 300" width="260" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="150" cy="150" r="120" fill="rgba(0,212,255,0.03)" stroke="#1E3050" stroke-width="1"/>
+        <circle cx="150" cy="150" id="areaCircle" r="80" fill="rgba(107,203,119,0.18)" stroke="#6BCB77" stroke-width="3"/>
+        <line id="areaRline" x1="150" y1="150" x2="230" y2="150" stroke="#FFD93D" stroke-width="2.5" stroke-dasharray="5,3"/>
+        <text id="areaRlabel" x="190" y="143" text-anchor="middle" font-family="Fredoka One,cursive" font-size="13" fill="#FFD93D">r = 7 cm</text>
+        <circle cx="150" cy="150" r="5" fill="#FFD93D"/>
+      </svg>
+    </div>
+    <div class="result-grid">
+      <div class="result-card">
+        <div class="rc-label">r² = r × r</div>
+        <div class="rc-val" id="areaRsq" style="color:var(--accent3);">49 cm²</div>
+      </div>
+      <div class="result-card">
+        <div class="rc-label">Area (A)</div>
+        <div class="rc-val" id="areaA" style="color:var(--accent4);">153.86 cm²</div>
+      </div>
+    </div>
+    <div style="margin-top:1rem; background:var(--bg3); border-radius:12px; padding:0.85rem 1rem; font-size:0.9rem; color:#A0D8A0; font-weight:600;" id="areaWorking"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="color:var(--accent);">📝 Worked Example</h2>
+    <div class="worked-q">
+      A round pizza has a diameter of 28 cm. Find its area. (Use π = 22/7)
+    </div>
+    <div class="steps">
+      <div class="step"><div class="step-num g">1</div><div class="step-text">Given: Diameter = 28 cm, so <strong>Radius = 28 ÷ 2 = 14 cm</strong></div></div>
+      <div class="step"><div class="step-num g">2</div><div class="step-text">Formula: <strong>A = π × r²</strong></div></div>
+      <div class="step"><div class="step-num g">3</div><div class="step-text">A = 22/7 × 14 × 14</div></div>
+      <div class="step"><div class="step-num g">4</div><div class="step-text">= 22/7 × 196 = 22 × 28 = <strong>616 cm² ✅</strong></div></div>
+    </div>
+    <div class="tip-box">Trick: 196 ÷ 7 = 28. So 22/7 × 196 = 22 × 28. Cancel the 7 first!</div>
+  </div>
+
+  <div class="card">
+    <h2 style="color:var(--accent2);">🧠 Your Turn!</h2>
+    <div class="worked-q">A circular pond has a radius of 10 m. Find its area. (Use π = 3.14)</div>
+    <button class="reveal-btn" onclick="toggleReveal('rev2',this)">👀 Show Working</button>
+    <div class="reveal-content" id="rev2">
+      <div class="steps">
+        <div class="step"><div class="step-num r">1</div><div class="step-text">Given: <strong>radius = 10 m</strong></div></div>
+        <div class="step"><div class="step-num r">2</div><div class="step-text">Formula: <strong>A = π × r²</strong></div></div>
+        <div class="step"><div class="step-num r">3</div><div class="step-text">A = 3.14 × 10 × 10 = 3.14 × 100</div></div>
+        <div class="step"><div class="step-num r">4</div><div class="step-text">A = <strong>314 m² ✅</strong></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ HALF & QUARTER ═══════════════ -->
+<div class="section" id="section-half">
+
+  <div class="card">
+    <div class="section-tag">Step 4 — Parts of a Circle</div>
+    <h2 style="color:var(--accent5);">Semicircle & Quarter Circle</h2>
+    <p>Sometimes we only have <em>half</em> or a <em>quarter</em> of a circle. We just divide by 2 or 4!</p>
+  </div>
+
+  <div class="card">
+    <h2 style="color:var(--accent);">🌗 Semicircle (Half Circle)</h2>
+    <div class="svg-wrap">
+      <svg viewBox="0 0 360 220" width="340" xmlns="http://www.w3.org/2000/svg">
+        <line x1="60" y1="150" x2="300" y2="150" stroke="#FF6B6B" stroke-width="2.5" stroke-dasharray="6,4"/>
+        <path d="M60,150 A120,120 0 0,1 300,150" fill="rgba(199,125,255,0.15)" stroke="#C77DFF" stroke-width="3"/>
+        <circle cx="180" cy="150" r="5" fill="#FFD93D"/>
+        <line x1="180" y1="150" x2="300" y2="150" stroke="#FFD93D" stroke-width="2.5" stroke-dasharray="5,3"/>
+        <text x="245" y="143" font-family="Fredoka One,cursive" font-size="13" fill="#FFD93D" text-anchor="middle">r</text>
+        <text x="180" y="100" font-family="Fredoka One,cursive" font-size="14" fill="#C77DFF" text-anchor="middle">Semicircle</text>
+        <text x="180" y="118" font-family="Nunito,sans-serif" font-size="11" fill="#A080CC" text-anchor="middle">= ½ of a full circle</text>
+        <!-- diameter label -->
+        <text x="180" y="175" font-family="Fredoka One,cursive" font-size="12" fill="#FF6B6B" text-anchor="middle">← diameter (d) →</text>
+      </svg>
+    </div>
+    <div class="two-col">
+      <div class="hbox purple">
+        <strong>Curved part only:</strong><br>
+        = ½ × π × d<br>
+        = π × r
+      </div>
+      <div class="hbox purple">
+        <strong>Perimeter (full border):</strong><br>
+        = ½ × π × d + d<br>
+        (curved part + straight edge)
+      </div>
+    </div>
+    <div class="hbox purple" style="text-align:center;">
+      <strong>Area of semicircle</strong> = ½ × π × r²
+    </div>
+
+    <div class="tip-box">Perimeter of a semicircle = the curved part <strong>PLUS</strong> the straight diameter. Don't forget the straight edge!</div>
+
+    <h2 style="color:var(--accent3); margin-top:1.2rem;">📝 Worked Example</h2>
+    <div class="worked-q">A semicircle has a diameter of 14 cm. Find its perimeter and area. (Use π = 22/7)</div>
+    <div class="steps">
+      <div class="step"><div class="step-num p">1</div><div class="step-text">Diameter = 14 cm, Radius = 7 cm</div></div>
+      <div class="step"><div class="step-num p">2</div><div class="step-text">Curved part = ½ × 22/7 × 14 = 22 cm</div></div>
+      <div class="step"><div class="step-num p">3</div><div class="step-text"><strong>Perimeter</strong> = 22 + 14 = <strong>36 cm ✅</strong></div></div>
+      <div class="step"><div class="step-num p">4</div><div class="step-text"><strong>Area</strong> = ½ × 22/7 × 7 × 7 = ½ × 154 = <strong>77 cm² ✅</strong></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="color:var(--accent3);">🍕 Quarter Circle</h2>
+    <div class="svg-wrap">
+      <svg viewBox="0 0 280 200" width="260" xmlns="http://www.w3.org/2000/svg">
+        <line x1="60" y1="170" x2="200" y2="170" stroke="#FF6B6B" stroke-width="2.5" stroke-dasharray="5,4"/>
+        <line x1="60" y1="170" x2="60" y2="30" stroke="#FF6B6B" stroke-width="2.5" stroke-dasharray="5,4"/>
+        <path d="M200,170 A140,140 0 0,0 60,30" fill="rgba(255,217,61,0.12)" stroke="#FFD93D" stroke-width="3"/>
+        <circle cx="60" cy="170" r="5" fill="#FFD93D"/>
+        <text x="130" y="162" font-family="Fredoka One,cursive" font-size="12" fill="#FF6B6B" text-anchor="middle">r</text>
+        <text x="52" y="105" font-family="Fredoka One,cursive" font-size="12" fill="#FF6B6B" text-anchor="end">r</text>
+        <text x="135" y="110" font-family="Fredoka One,cursive" font-size="13" fill="#FFD93D" text-anchor="middle">¼ circle</text>
+      </svg>
+    </div>
+    <div class="two-col">
+      <div class="hbox yellow">
+        <strong>Curved part only:</strong><br>
+        = ¼ × π × d = ½ × π × r
+      </div>
+      <div class="hbox yellow">
+        <strong>Perimeter (full border):</strong><br>
+        = ¼ × π × d + 2r<br>
+        (curved part + 2 straight edges)
+      </div>
+    </div>
+    <div class="hbox yellow" style="text-align:center;">
+      <strong>Area of quarter circle</strong> = ¼ × π × r²
+    </div>
+
+    <h2 style="color:var(--accent); margin-top:1.2rem;">📝 Worked Example</h2>
+    <div class="worked-q">A quarter circle has a radius of 7 cm. Find its perimeter and area. (Use π = 22/7)</div>
+    <button class="reveal-btn" onclick="toggleReveal('rev3',this)">👀 Show Working</button>
+    <div class="reveal-content" id="rev3">
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-text">Radius = 7 cm</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-text">Curved part = ¼ × 22/7 × 14 = ¼ × 44 = 11 cm</div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Perimeter</strong> = 11 + 7 + 7 = <strong>25 cm ✅</strong></div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-text"><strong>Area</strong> = ¼ × 22/7 × 7 × 7 = ¼ × 154 = <strong>38.5 cm² ✅</strong></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ PRACTICE ═══════════════ -->
+<div class="section" id="section-practice">
+  <div class="card">
+    <div class="section-tag">Step 5 — Try It Yourself</div>
+    <h2 style="color:var(--accent5);">✏️ Practice Problems</h2>
+    <p>Type your answer and press <strong>Check</strong>. Round to 2 decimal places where needed.</p>
+  </div>
+
+  <div class="card">
+    <div class="practice-q">
+      <div class="pq-label">Problem 1 — Circumference</div>
+      <div class="pq-text">A circle has a <strong>radius of 7 cm</strong>. Find its circumference. Use π = 22/7.</div>
+      <div class="input-row">
+        <input class="pq-input" type="number" id="p1" placeholder="e.g. 44">
+        <span class="pq-unit">cm</span>
+        <button class="pq-btn" onclick="checkP(1)">Check ✓</button>
+      </div>
+      <div class="pq-fb" id="pfb1"></div>
+    </div>
+
+    <div class="practice-q" style="margin-top:1rem;">
+      <div class="pq-label">Problem 2 — Circumference</div>
+      <div class="pq-text">A circle has a <strong>diameter of 20 cm</strong>. Find its circumference. Use π = 3.14.</div>
+      <div class="input-row">
+        <input class="pq-input" type="number" id="p2" placeholder="e.g. 62.8">
+        <span class="pq-unit">cm</span>
+        <button class="pq-btn" onclick="checkP(2)">Check ✓</button>
+      </div>
+      <div class="pq-fb" id="pfb2"></div>
+    </div>
+
+    <div class="practice-q" style="margin-top:1rem;">
+      <div class="pq-label">Problem 3 — Area</div>
+      <div class="pq-text">A circular field has a <strong>radius of 14 m</strong>. Find its area. Use π = 22/7.</div>
+      <div class="input-row">
+        <input class="pq-input" type="number" id="p3" placeholder="e.g. 616">
+        <span class="pq-unit">m²</span>
+        <button class="pq-btn" onclick="checkP(3)">Check ✓</button>
+      </div>
+      <div class="pq-fb" id="pfb3"></div>
+    </div>
+
+    <div class="practice-q" style="margin-top:1rem;">
+      <div class="pq-label">Problem 4 — Area</div>
+      <div class="pq-text">A circular pond has a <strong>diameter of 10 m</strong>. Find its area. Use π = 3.14.</div>
+      <div class="input-row">
+        <input class="pq-input" type="number" id="p4" placeholder="e.g. 78.5">
+        <span class="pq-unit">m²</span>
+        <button class="pq-btn" onclick="checkP(4)">Check ✓</button>
+      </div>
+      <div class="pq-fb" id="pfb4"></div>
+    </div>
+
+    <div class="practice-q" style="margin-top:1rem;">
+      <div class="pq-label">Problem 5 — Semicircle Perimeter</div>
+      <div class="pq-text">A <strong>semicircle has diameter 14 cm</strong>. Find its <strong>perimeter</strong>. Use π = 22/7.</div>
+      <div class="input-row">
+        <input class="pq-input" type="number" id="p5" placeholder="e.g. 36">
+        <span class="pq-unit">cm</span>
+        <button class="pq-btn" onclick="checkP(5)">Check ✓</button>
+      </div>
+      <div class="pq-fb" id="pfb5"></div>
+    </div>
+
+    <div class="practice-q" style="margin-top:1rem;">
+      <div class="pq-label">Problem 6 — Quarter Circle Area</div>
+      <div class="pq-text">A <strong>quarter circle has radius 10 cm</strong>. Find its <strong>area</strong>. Use π = 3.14.</div>
+      <div class="input-row">
+        <input class="pq-input" type="number" id="p6" placeholder="e.g. 78.5">
+        <span class="pq-unit">cm²</span>
+        <button class="pq-btn" onclick="checkP(6)">Check ✓</button>
+      </div>
+      <div class="pq-fb" id="pfb6"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ QUIZ ═══════════════ -->
+<div class="section" id="section-quiz">
+  <div class="card">
+    <div id="quizMain">
+      <div id="qTag" class="section-tag">Quiz</div>
+      <div id="quizQ" class="quiz-q"></div>
+      <div id="quizOpts" class="quiz-opts"></div>
+      <div id="qfb" class="qfb"></div>
+      <div class="quiz-nav">
+        <span class="score-badge" id="scoreD">0 ⭐</span>
+        <button id="nxtBtn" onclick="nextQ()" disabled>Next →</button>
+      </div>
+      <div class="qprog" id="qprog"></div>
+    </div>
+    <div id="quizEnd" style="display:none;">
+      <div class="end-card">
+        <div class="big-emoji" id="eEmoji"></div>
+        <h2>Quiz Done!</h2>
+        <div class="stars-row" id="eStars"></div>
+        <p id="eMsg" style="color:var(--muted); font-size:1rem; margin:0.5rem 0;"></p>
+        <button class="restart-btn" onclick="restartQuiz()">🔁 Try Again</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ CHEAT SHEET ═══════════════ -->
+<div class="section" id="section-cheat">
+  <div class="card">
+    <div class="section-tag">Quick Reference</div>
+    <h2 style="color:var(--accent3);">📋 Formula Cheat Sheet</h2>
+    <p style="margin-bottom:1rem;">All the formulas in one place. <strong>Screenshot this!</strong></p>
+    <div class="cheat-grid">
+      <div class="cheat-card">
+        <div class="ch-emoji">📐</div>
+        <div class="ch-title">Diameter</div>
+        <span class="formula" style="font-size:1.1rem;">d = 2r</span>
+      </div>
+      <div class="cheat-card">
+        <div class="ch-emoji">📏</div>
+        <div class="ch-title">Radius</div>
+        <span class="formula" style="font-size:1.1rem;">r = d ÷ 2</span>
+      </div>
+      <div class="cheat-card">
+        <div class="ch-emoji">⭕</div>
+        <div class="ch-title">Circumference</div>
+        <span class="formula" style="font-size:1.05rem;">C = π × d</span><br>
+        <span style="font-size:0.78rem; color:var(--muted); margin-top:4px; display:block;">= 2 × π × r</span>
+      </div>
+      <div class="cheat-card">
+        <div class="ch-emoji">🟢</div>
+        <div class="ch-title">Area of Circle</div>
+        <span class="formula green" style="font-size:1.1rem;">A = π × r²</span>
+      </div>
+      <div class="cheat-card">
+        <div class="ch-emoji">🌗</div>
+        <div class="ch-title">Semicircle Perimeter</div>
+        <span class="formula purple" style="font-size:0.95rem;">½πd + d</span>
+      </div>
+      <div class="cheat-card">
+        <div class="ch-emoji">🌗</div>
+        <div class="ch-title">Semicircle Area</div>
+        <span class="formula purple" style="font-size:1rem;">½ × π × r²</span>
+      </div>
+      <div class="cheat-card">
+        <div class="ch-emoji">🍕</div>
+        <div class="ch-title">Quarter Circle Perimeter</div>
+        <span class="formula yellow" style="font-size:0.95rem;">¼πd + 2r</span>
+      </div>
+      <div class="cheat-card">
+        <div class="ch-emoji">🍕</div>
+        <div class="ch-title">Quarter Circle Area</div>
+        <span class="formula yellow" style="font-size:1rem;">¼ × π × r²</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="color:var(--accent);">When to use 22/7 vs 3.14?</h2>
+    <div class="two-col">
+      <div class="hbox yellow">
+        <strong>Use 22/7</strong> when radius or diameter is a <strong>multiple of 7</strong><br>
+        e.g. r = 7, 14, 21, 28 cm
+      </div>
+      <div class="hbox blue">
+        <strong>Use 3.14</strong> for <strong>all other numbers</strong><br>
+        e.g. r = 5, 10, 6, 15 cm
+      </div>
+    </div>
+    <div class="tip-box">The question will usually tell you which π to use. Always follow the instruction!</div>
+  </div>
+
+  <div class="card">
+    <h2 style="color:var(--accent2);">⚠️ Common Mistakes</h2>
+    <div class="steps">
+      <div class="step"><div class="step-num r">!</div><div class="step-text">Using diameter instead of radius in the Area formula. <strong>Area = π × r²</strong>, NOT π × d²</div></div>
+      <div class="step"><div class="step-num r">!</div><div class="step-text">Forgetting the straight edge in perimeter of semicircle/quarter circle</div></div>
+      <div class="step"><div class="step-num r">!</div><div class="step-text">Forgetting to square the radius: r² = r × r (e.g. 7² = 49, NOT 14)</div></div>
+      <div class="step"><div class="step-num r">!</div><div class="step-text">Mixing up cm (circumference) and cm² (area) in the answer units</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── TAB SWITCHING ──
+function showTab(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('section-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── PARTS INFO ──
+const partData = {
+  centre: { color: '#FFD93D', text: '⭐ <strong style="color:#FFD93D">Centre</strong> — The exact middle point of a circle. Every point on the circle is the same distance from the centre.' },
+  radius: { color: '#FFD93D', text: '📏 <strong style="color:#FFD93D">Radius (r)</strong> — The distance from the <strong>centre to any point on the circle</strong>. If you cut a pizza, the radius is the length of each slice from tip to crust.' },
+  diameter: { color: '#FF6B6B', text: '↔️ <strong style="color:#FF6B6B">Diameter (d)</strong> — A straight line that goes from one side of the circle to the other, <strong>passing through the centre</strong>. It is always <strong>twice the radius</strong>: d = 2r' },
+  circumference: { color: '#6BCB77', text: '🔄 <strong style="color:#6BCB77">Circumference (C)</strong> — The total distance <strong>around the outside</strong> of the circle. Like the fence around a round field. C = π × d' },
+  pi: { color: '#C77DFF', text: 'π <strong style="color:#C77DFF">Pi (π)</strong> — A special number ≈ <strong>3.14</strong> (or 22/7). It tells us how many times the diameter fits around the circumference. It never changes for any circle!' }
+};
+function showPartInfo(part) {
+  const d = partData[part];
+  document.getElementById('partInfoBox').style.borderColor = d.color;
+  document.getElementById('partInfoBox').innerHTML = d.text;
+}
+function rdCheck(btn, correct) {
+  document.querySelectorAll('.qbtn').forEach(b => b.disabled = true);
+  if (correct) {
+    btn.classList.add('correct');
+    document.getElementById('rdFb').innerHTML = '✅ Correct! Diameter = 2 × radius = 2 × 7 = 14 cm';
+    document.getElementById('rdFb').style.color = 'var(--accent4)';
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.qbtn')[1].classList.add('correct');
+    document.getElementById('rdFb').innerHTML = '❌ Not quite. Diameter = 2 × Radius = 2 × 7 = 14 cm';
+    document.getElementById('rdFb').style.color = 'var(--accent2)';
+  }
+}
+
+// ── CIRCUMFERENCE SLIDER ──
+function updateCirc() {
+  const r = +document.getElementById('circSlider').value;
+  const d = r * 2;
+  const usePI22 = d % 7 === 0;
+  const pi = usePI22 ? 22/7 : 3.14;
+  const C = pi * d;
+  const Cstr = usePI22 ? Math.round(C) : C.toFixed(2);
+  document.getElementById('circR').textContent = r + ' cm';
+  document.getElementById('circD').textContent = d + ' cm';
+  document.getElementById('circC').textContent = Cstr + ' cm';
+  const piStr = usePI22 ? '22/7' : '3.14';
+  document.getElementById('circWorking').innerHTML =
+    `Working: C = π × d = ${piStr} × ${d} = <strong style="color:var(--accent)">${Cstr} cm</strong>`;
+}
+updateCirc();
+
+// ── AREA SLIDER ──
+function updateArea() {
+  const r = +document.getElementById('areaSlider').value;
+  const usePI22 = r % 7 === 0;
+  const pi = usePI22 ? 22/7 : 3.14;
+  const A = pi * r * r;
+  const Astr = usePI22 ? Math.round(A) : A.toFixed(2);
+  const rsq = r * r;
+  const piStr = usePI22 ? '22/7' : '3.14';
+  const maxR = 115; const scale = Math.min(1, r / 15);
+  const svgR = Math.round(20 + scale * 95);
+  document.getElementById('areaSlider').parentElement.nextElementSibling && null;
+  document.getElementById('areaR').textContent = r + ' cm';
+  document.getElementById('areaRsq').textContent = rsq + ' cm²';
+  document.getElementById('areaA').textContent = Astr + ' cm²';
+  document.getElementById('areaWorking').innerHTML =
+    `Working: A = π × r² = ${piStr} × ${r} × ${r} = ${piStr} × ${rsq} = <strong style="color:var(--accent4)">${Astr} cm²</strong>`;
+  const circ = document.getElementById('areaCircle');
+  if (circ) { circ.setAttribute('r', svgR); }
+  const rline = document.getElementById('areaRline');
+  if (rline) { rline.setAttribute('x2', 150 + svgR); }
+  const rl = document.getElementById('areaRlabel');
+  if (rl) { rl.setAttribute('x', 150 + svgR/2); rl.textContent = 'r = ' + r + ' cm'; }
+}
+updateArea();
+
+// ── REVEAL ──
+function toggleReveal(id, btn) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+  btn.textContent = el.classList.contains('open') ? '🙈 Hide Working' : '👀 Show Working';
+}
+
+// ── PRACTICE CHECKER ──
+const answers = { 1: 44, 2: 62.8, 3: 616, 4: 78.5, 5: 36, 6: 78.5 };
+const hints = {
+  1: 'C = 2 × 22/7 × 7 = 44 cm',
+  2: 'C = 3.14 × 20 = 62.8 cm',
+  3: 'A = 22/7 × 14 × 14 = 22 × 28 = 616 m²',
+  4: 'Radius = 5 m. A = 3.14 × 5 × 5 = 78.5 m²',
+  5: 'Curved = ½ × 22/7 × 14 = 22. Perimeter = 22 + 14 = 36 cm',
+  6: 'A = ¼ × 3.14 × 10 × 10 = ¼ × 314 = 78.5 cm²'
+};
+function checkP(n) {
+  const val = parseFloat(document.getElementById('p' + n).value);
+  const fb = document.getElementById('pfb' + n);
+  if (isNaN(val)) { fb.textContent = '⚠️ Please type a number first.'; fb.className = 'pq-fb err'; return; }
+  if (Math.abs(val - answers[n]) < 0.05) {
+    fb.innerHTML = '✅ Correct! Well done! 🎉';
+    fb.className = 'pq-fb ok';
+  } else {
+    fb.innerHTML = `❌ Not quite. Hint: <em>${hints[n]}</em>`;
+    fb.className = 'pq-fb err';
+  }
+}
+
+// ── QUIZ ──
+const Qs = [
+  { q: 'A circle has a radius of 7 cm. What is its diameter?', opts: ['7 cm','3.5 cm','14 cm','21 cm'], ans: 2 },
+  { q: 'Which formula gives the circumference of a circle?', opts: ['A = π × r²','C = π × d','A = π × d²','C = r²'], ans: 1 },
+  { q: 'A circle has diameter 10 cm. Its circumference using π = 3.14 is:', opts: ['31.4 cm','62.8 cm','78.5 cm','15.7 cm'], ans: 0 },
+  { q: 'Which formula gives the area of a circle?', opts: ['A = 2πr','A = πd','A = πr²','A = ½πd'], ans: 2 },
+  { q: 'A circle has radius 7 cm. Its area using π = 22/7 is:', opts: ['44 cm²','154 cm²','77 cm²','616 cm²'], ans: 1 },
+  { q: 'A semicircle has diameter 14 cm. Its curved length (using π = 22/7) is:', opts: ['44 cm','22 cm','11 cm','7 cm'], ans: 1 },
+  { q: 'The perimeter of a semicircle with diameter 14 cm (π = 22/7) is:', opts: ['22 cm','36 cm','44 cm','28 cm'], ans: 1 },
+  { q: 'A quarter circle has radius 10 cm. Its area (π = 3.14) is:', opts: ['314 cm²','78.5 cm²','31.4 cm²','157 cm²'], ans: 1 },
+  { q: 'What does r² mean?', opts: ['r + r','2 × r','r × r','r ÷ 2'], ans: 2 },
+  { q: 'The question says "diameter = 21 cm". Which π should you use?', opts: ['3.14','22/7','Both work the same','Neither'], ans: 1 },
+];
+let qi = 0, sc = 0, answered = false;
+function loadQ() {
+  answered = false;
+  const q = Qs[qi];
+  document.getElementById('qTag').textContent = `Question ${qi+1} of ${Qs.length}`;
+  document.getElementById('quizQ').textContent = q.q;
+  document.getElementById('qfb').textContent = '';
+  document.getElementById('nxtBtn').disabled = true;
+  document.getElementById('qprog').textContent = `Score so far: ${sc} / ${Qs.length}`;
+  const opts = document.getElementById('quizOpts');
+  opts.innerHTML = '';
+  q.opts.forEach((o, i) => {
+    const b = document.createElement('button');
+    b.className = 'qbtn'; b.textContent = o;
+    b.onclick = () => pickQ(i, b);
+    opts.appendChild(b);
+  });
+}
+function pickQ(i, btn) {
+  if (answered) return;
+  answered = true;
+  const q = Qs[qi];
+  document.querySelectorAll('.qbtn').forEach(b => b.disabled = true);
+  if (i === q.ans) {
+    btn.classList.add('correct'); sc++;
+    document.getElementById('scoreD').textContent = sc + ' ⭐';
+    document.getElementById('qfb').innerHTML = '✅ Correct! Great work!';
+    document.getElementById('qfb').style.color = 'var(--accent4)';
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.qbtn')[q.ans].classList.add('correct');
+    document.getElementById('qfb').innerHTML = '❌ Not quite — the correct answer is highlighted.';
+    document.getElementById('qfb').style.color = 'var(--accent2)';
+  }
+  document.getElementById('nxtBtn').disabled = false;
+}
+function nextQ() {
+  qi++;
+  if (qi >= Qs.length) { showEnd(); return; }
+  loadQ();
+}
+function showEnd() {
+  document.getElementById('quizMain').style.display = 'none';
+  document.getElementById('quizEnd').style.display = 'block';
+  const pct = sc / Qs.length;
+  let emoji, stars, msg;
+  if (pct >= 0.9) { emoji = '🏆'; stars = '⭐⭐⭐'; msg = `${sc}/${Qs.length} — Excellent! You really know your circles!`; }
+  else if (pct >= 0.6) { emoji = '🌟'; stars = '⭐⭐'; msg = `${sc}/${Qs.length} — Good effort! Review the tabs you found tricky.`; }
+  else { emoji = '💪'; stars = '⭐'; msg = `${sc}/${Qs.length} — Keep practising! Go through the Learn tabs again.`; }
+  document.getElementById('eEmoji').textContent = emoji;
+  document.getElementById('eStars').textContent = stars;
+  document.getElementById('eMsg').textContent = msg;
+}
+function restartQuiz() {
+  qi = 0; sc = 0;
+  document.getElementById('scoreD').textContent = '0 ⭐';
+  document.getElementById('quizMain').style.display = 'block';
+  document.getElementById('quizEnd').style.display = 'none';
+  loadQ();
+}
+loadQ();
+</script>
+</body>
+</html>
