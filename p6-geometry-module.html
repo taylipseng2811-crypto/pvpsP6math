@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>P6 Geometry — Angle Explorer</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #FDF6EC;
+  --cream2: #F5ECD8;
+  --cream3: #EDE0C8;
+  --ink: #1C2B3A;
+  --ink2: #2E4057;
+  --muted: #7A8FA0;
+  --amber: #E8A020;
+  --amber-light: #FFF0CC;
+  --amber-pale: #FEF9EE;
+  --red: #D94F3D;
+  --red-light: #FDECEA;
+  --teal: #1A7F7A;
+  --teal-light: #E0F5F4;
+  --blue: #2B6CB0;
+  --blue-light: #EBF4FF;
+  --purple: #7B4F9E;
+  --purple-light: #F3EAFF;
+  --green: #2D7A4F;
+  --green-light: #E6F5EC;
+  --border: #D9CCBA;
+  --r: 14px;
+  --rl: 20px;
+  --shadow: 0 2px 12px rgba(28,43,58,0.10);
+  --shadow-lg: 0 6px 28px rgba(28,43,58,0.13);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── GRID TEXTURE ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(28,43,58,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(28,43,58,0.035) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+body > * { position: relative; z-index: 1; }
+
+/* ── HEADER ── */
+.header {
+  background: var(--ink);
+  color: var(--cream);
+  padding: 2.2rem 1.5rem 1.8rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.header::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+.header-inner { position: relative; z-index: 1; }
+.header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.9rem, 6vw, 3rem);
+  font-weight: 800;
+  line-height: 1.1;
+  color: #FDF6EC;
+  letter-spacing: -0.5px;
+}
+.header h1 span { color: var(--amber); }
+.header .sub {
+  font-size: 0.95rem;
+  color: #8FAEC4;
+  font-weight: 600;
+  margin-top: 0.4rem;
+  letter-spacing: 0.5px;
+}
+.deco-shapes {
+  position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+}
+.deco-shapes svg { position: absolute; opacity: 0.12; }
+
+/* ── TABS ── */
+.tabs-wrap {
+  background: var(--ink2);
+  padding: 0.7rem 1rem;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.tabs {
+  display: flex; gap: 6px; overflow-x: auto;
+  max-width: 900px; margin: 0 auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.85rem; font-weight: 800;
+  padding: 0.45rem 1rem;
+  border-radius: 50px;
+  border: 1.5px solid rgba(255,255,255,0.15);
+  background: transparent;
+  color: #8FAEC4;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+.tab:hover { background: rgba(255,255,255,0.07); color: #C8DCF0; }
+.tab.active { background: var(--amber); color: var(--ink); border-color: var(--amber); font-weight: 800; }
+
+/* ── SECTIONS ── */
+.section { display: none; max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+.section.active { display: block; }
+
+/* ── CARDS ── */
+.card {
+  background: white;
+  border-radius: var(--rl);
+  border: 1px solid var(--border);
+  padding: 1.4rem 1.5rem;
+  margin-bottom: 1.2rem;
+  box-shadow: var(--shadow);
+}
+.card h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.35rem; font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 0.55rem;
+  line-height: 1.2;
+}
+.card p { font-size: 0.97rem; line-height: 1.75; color: #354A5E; }
+.card p strong { color: var(--ink); font-weight: 800; }
+.card p em { color: var(--teal); font-style: normal; font-weight: 700; }
+
+/* section label */
+.slabel {
+  display: inline-block;
+  font-size: 0.7rem; font-weight: 800; letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 3px 10px; border-radius: 50px;
+  background: var(--amber-light); color: var(--amber);
+  border: 1px solid var(--amber);
+  margin-bottom: 0.6rem;
+}
+
+/* ── RULE BOXES ── */
+.rulebox {
+  border-radius: var(--r);
+  padding: 0.9rem 1.1rem;
+  margin: 0.7rem 0;
+  border-left: 5px solid;
+  font-size: 0.95rem; line-height: 1.7;
+  display: flex; gap: 10px; align-items: flex-start;
+}
+.rulebox .rb-icon { font-size: 1.3rem; min-width: 1.5rem; }
+.rulebox .rb-body { flex: 1; }
+.rulebox .rb-body strong { font-weight: 800; }
+.rb-amber { background: var(--amber-pale); border-color: var(--amber); color: #5C3D00; }
+.rb-teal { background: var(--teal-light); border-color: var(--teal); color: #0B3330; }
+.rb-red { background: var(--red-light); border-color: var(--red); color: #5C1A12; }
+.rb-blue { background: var(--blue-light); border-color: var(--blue); color: #0A2E58; }
+.rb-purple { background: var(--purple-light); border-color: var(--purple); color: #3A1A5C; }
+.rb-green { background: var(--green-light); border-color: var(--green); color: #0F3020; }
+
+/* ── ANGLE BADGES ── */
+.angle-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem; font-weight: 700;
+  padding: 0.3rem 0.8rem;
+  border-radius: 8px;
+  margin: 2px 3px;
+  border: 2px solid;
+}
+.ab-amber { background: var(--amber-light); border-color: var(--amber); color: #7A3E00; }
+.ab-teal { background: var(--teal-light); border-color: var(--teal); color: var(--teal); }
+.ab-red { background: var(--red-light); border-color: var(--red); color: var(--red); }
+.ab-blue { background: var(--blue-light); border-color: var(--blue); color: var(--blue); }
+.ab-purple { background: var(--purple-light); border-color: var(--purple); color: var(--purple); }
+
+/* ── SVG DIAGRAM WRAPPER ── */
+.dia-wrap {
+  display: flex; justify-content: center;
+  margin: 0.8rem 0;
+  background: var(--cream);
+  border-radius: var(--r);
+  border: 1px solid var(--border);
+  padding: 0.5rem;
+  overflow: hidden;
+}
+.dia-wrap svg { max-width: 100%; }
+
+/* ── INTERACTIVE ANGLE DEMO ── */
+.angle-demo-wrap {
+  display: flex; justify-content: center; align-items: center;
+  margin: 0.8rem 0;
+  position: relative;
+}
+.demo-info {
+  background: var(--cream2);
+  border-radius: 12px;
+  padding: 0.7rem 1rem;
+  font-size: 0.9rem;
+  color: var(--ink2);
+  font-weight: 600;
+  text-align: center;
+  margin: 0.4rem 0;
+  border: 1px solid var(--border);
+}
+.demo-info span { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; }
+
+/* ── STEPS ── */
+.steps { display: flex; flex-direction: column; gap: 0.6rem; margin: 0.8rem 0; }
+.step {
+  display: flex; gap: 12px; align-items: flex-start;
+  background: var(--cream);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+}
+.step-num {
+  width: 28px; height: 28px; min-width: 28px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 0.85rem;
+  font-family: 'Playfair Display', serif;
+}
+.sn-amber { background: var(--amber); color: white; }
+.sn-teal { background: var(--teal); color: white; }
+.sn-red { background: var(--red); color: white; }
+.sn-blue { background: var(--blue); color: white; }
+.sn-green { background: var(--green); color: white; }
+.step-text { font-size: 0.93rem; line-height: 1.65; color: #354A5E; flex: 1; }
+.step-text strong { color: var(--ink); font-weight: 800; }
+.step-text em { color: var(--teal); font-style: normal; font-weight: 700; }
+
+/* ── WORKED EG ── */
+.worked-q {
+  background: var(--cream2);
+  border-radius: var(--r);
+  padding: 0.9rem 1.1rem;
+  border: 2px dashed var(--amber);
+  margin: 0.8rem 0;
+  font-size: 0.97rem;
+  line-height: 1.7;
+  color: #3A2800;
+  font-weight: 600;
+}
+.reveal-btn {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.9rem; font-weight: 800;
+  padding: 0.5rem 1.3rem;
+  border-radius: 50px;
+  border: 2px solid var(--teal);
+  background: white;
+  color: var(--teal);
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 0.4rem;
+}
+.reveal-btn:hover { background: var(--teal); color: white; }
+.reveal-content { display: none; margin-top: 0.8rem; }
+.reveal-content.open { display: block; }
+
+/* ── TWO COL ── */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.8rem; }
+@media(max-width:540px){
+  .two-col { grid-template-columns: 1fr; }
+  .three-col { grid-template-columns: 1fr 1fr; }
+}
+@media(max-width:360px){ .three-col { grid-template-columns: 1fr; } }
+
+/* ── SHAPE CARDS ── */
+.shape-card {
+  background: white;
+  border-radius: var(--r);
+  border: 1.5px solid var(--border);
+  padding: 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: var(--shadow);
+}
+.shape-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: var(--amber); }
+.shape-card.active-card { border-color: var(--amber); background: var(--amber-pale); }
+.shape-card svg { display: block; margin: 0 auto 0.5rem; }
+.shape-card .sc-name { font-family: 'Playfair Display', serif; font-size: 0.95rem; font-weight: 700; color: var(--ink); }
+.shape-card .sc-hint { font-size: 0.72rem; color: var(--muted); margin-top: 2px; font-weight: 600; }
+
+/* shape info panel */
+.shape-info {
+  background: white;
+  border-radius: var(--r);
+  border: 1.5px solid var(--border);
+  padding: 1.1rem 1.3rem;
+  margin-top: 0.8rem;
+  min-height: 80px;
+  box-shadow: var(--shadow);
+  display: none;
+}
+.shape-info.open { display: block; }
+.shape-info h3 { font-family: 'Playfair Display', serif; font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--ink); }
+.shape-info ul { padding-left: 1.2rem; }
+.shape-info ul li { font-size: 0.92rem; line-height: 1.7; color: #354A5E; }
+.shape-info ul li strong { color: var(--ink); }
+
+/* ── PRACTICE INPUT ── */
+.pq-wrap {
+  background: var(--cream);
+  border-radius: var(--r);
+  border: 2px dashed var(--purple);
+  padding: 1rem 1.1rem;
+  margin: 0.8rem 0;
+}
+.pq-tag { font-size: 0.72rem; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--purple); margin-bottom: 0.4rem; }
+.pq-text { font-size: 0.97rem; color: var(--ink2); font-weight: 600; line-height: 1.65; margin-bottom: 0.7rem; }
+.input-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.pq-input {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  padding: 0.45rem 0.8rem;
+  border-radius: 10px;
+  border: 2px solid var(--purple);
+  background: white;
+  color: var(--ink);
+  width: 110px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.pq-input:focus { border-color: var(--blue); }
+.pq-unit { font-size: 0.9rem; color: var(--muted); font-weight: 700; }
+.pq-btn {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.88rem; font-weight: 800;
+  padding: 0.45rem 1.1rem;
+  border-radius: 50px;
+  border: 2px solid var(--purple);
+  background: white;
+  color: var(--purple);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.pq-btn:hover { background: var(--purple); color: white; }
+.pq-fb { margin-top: 0.5rem; font-size: 0.9rem; font-weight: 700; min-height: 1.2rem; }
+.pq-fb.ok { color: var(--green); }
+.pq-fb.err { color: var(--red); }
+
+/* ── QUIZ ── */
+.quiz-q { font-size: 1rem; font-weight: 700; color: var(--ink); margin-bottom: 0.9rem; line-height: 1.65; }
+.quiz-opts { display: flex; flex-direction: column; gap: 0.55rem; }
+.qbtn {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.93rem; font-weight: 700;
+  padding: 0.7rem 1rem;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--cream);
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.18s;
+}
+.qbtn:hover:not(:disabled) { border-color: var(--amber); background: var(--amber-pale); }
+.qbtn.correct { background: var(--green-light); border-color: var(--green); color: var(--green); }
+.qbtn.wrong { background: var(--red-light); border-color: var(--red); color: var(--red); }
+.qfb { margin-top: 0.65rem; font-size: 0.92rem; font-weight: 700; min-height: 1.3rem; }
+.quiz-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; }
+.quiz-nav button {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.95rem; font-weight: 800;
+  padding: 0.5rem 1.4rem;
+  border-radius: 50px;
+  border: 2px solid var(--amber);
+  background: var(--amber);
+  color: var(--ink);
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.quiz-nav button:disabled { opacity: 0.3; cursor: default; }
+.score-badge { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--amber); font-weight: 700; }
+.qprog { font-size: 0.8rem; color: var(--muted); margin-top: 0.5rem; font-weight: 600; }
+
+.tip-box {
+  background: var(--amber-light);
+  border-radius: 10px;
+  padding: 0.65rem 1rem;
+  font-size: 0.88rem; font-weight: 700;
+  color: #5C3D00;
+  margin: 0.6rem 0;
+  display: flex; gap: 8px;
+}
+.tip-box::before { content: '💡'; }
+
+/* ── CHEAT GRID ── */
+.cheat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 1rem; }
+.cheat-card {
+  background: white;
+  border-radius: var(--r);
+  border: 1px solid var(--border);
+  padding: 1rem;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.cheat-card .cc-title { font-family: 'Playfair Display', serif; font-size: 0.95rem; font-weight: 700; color: var(--ink2); margin-bottom: 6px; }
+.cheat-card .cc-rule {
+  display: inline-block;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem; font-weight: 700;
+  padding: 0.35rem 0.85rem;
+  border-radius: 8px;
+  margin-top: 4px;
+}
+
+/* ── END CARD ── */
+.end-card { text-align: center; padding: 2rem 1rem; }
+.end-card .big-emoji { font-size: 4rem; }
+.end-card h2 { font-family: 'Playfair Display', serif; font-size: 1.9rem; font-weight: 700; color: var(--ink); margin: 0.4rem 0; }
+.end-card .stars { font-size: 1.8rem; letter-spacing: 5px; margin: 0.4rem 0; }
+.restart-btn {
+  font-family: 'Nunito', sans-serif;
+  font-size: 1rem; font-weight: 800;
+  padding: 0.65rem 2rem;
+  border-radius: 50px;
+  border: 2px solid var(--amber);
+  background: var(--amber);
+  color: var(--ink);
+  cursor: pointer;
+  margin-top: 1rem;
+  box-shadow: var(--shadow);
+}
+
+/* ── ANGLE INTERACTIVE ── */
+.angle-interactive {
+  background: var(--cream2);
+  border-radius: var(--r);
+  border: 1px solid var(--border);
+  padding: 1rem;
+  text-align: center;
+  margin: 0.8rem 0;
+}
+.angle-interactive label {
+  font-size: 0.88rem; font-weight: 700; color: var(--ink2);
+  display: block; margin-bottom: 0.4rem;
+}
+.angle-interactive input[type=range] {
+  width: 100%; max-width: 300px;
+  accent-color: var(--amber); height: 5px; margin: 0.3rem 0;
+}
+
+/* ── PARALLEL LINES VISUAL ── */
+.parallel-tabs {
+  display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 0.8rem;
+}
+.para-tab {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.8rem; font-weight: 800;
+  padding: 0.35rem 0.85rem;
+  border-radius: 50px;
+  border: 1.5px solid var(--border);
+  background: white;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.para-tab:hover { border-color: var(--teal); color: var(--teal); }
+.para-tab.active { background: var(--teal); color: white; border-color: var(--teal); }
+
+/* scroll indicator */
+.scroll-hint {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-weight: 600;
+  padding: 0.3rem 0 0;
+  letter-spacing: 0.5px;
+}
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<div class="header">
+  <div class="deco-shapes">
+    <svg width="120" height="120" style="top:-20px; left:-10px;" viewBox="0 0 120 120"><polygon points="60,10 110,100 10,100" fill="none" stroke="#FDF6EC" stroke-width="3"/></svg>
+    <svg width="80" height="80" style="top:10px; right:30px;" viewBox="0 0 80 80"><rect x="10" y="10" width="60" height="60" fill="none" stroke="#FDF6EC" stroke-width="2.5" rx="4"/></svg>
+    <svg width="70" height="70" style="bottom:-10px; left:18%;" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" fill="none" stroke="#FDF6EC" stroke-width="2"/></svg>
+    <svg width="100" height="100" style="bottom:-5px; right:8%;" viewBox="0 0 100 100"><polygon points="50,5 95,75 5,75" fill="none" stroke="#FDF6EC" stroke-width="2"/></svg>
+  </div>
+  <div class="header-inner">
+    <h1>📐 Geometry <span>&amp; Angles</span></h1>
+    <div class="sub">P6 Maths · Singapore Syllabus · Step by step for every learner</div>
+  </div>
+</div>
+
+<!-- ── TABS ── -->
+<div class="tabs-wrap">
+  <div class="tabs" role="tablist">
+    <button class="tab active" onclick="showTab('angles',this)">📐 Angle Rules</button>
+    <button class="tab" onclick="showTab('triangles',this)">🔺 Triangles</button>
+    <button class="tab" onclick="showTab('quads',this)">⬛ Quadrilaterals</button>
+    <button class="tab" onclick="showTab('parallel',this)">〰️ Parallel Lines</button>
+    <button class="tab" onclick="showTab('practice',this)">✏️ Practice</button>
+    <button class="tab" onclick="showTab('quiz',this)">🎯 Quiz</button>
+    <button class="tab" onclick="showTab('cheat',this)">📋 Cheat Sheet</button>
+  </div>
+  <div class="scroll-hint">← scroll tabs →</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION 1 — ANGLE RULES
+══════════════════════════════════════════ -->
+<div class="section active" id="section-angles">
+
+  <div class="card">
+    <div class="slabel">Step 1 — Foundation</div>
+    <h2>The 5 Key Angle Rules</h2>
+    <p>Almost every geometry problem in PSLE uses these 5 rules. Learn them well and you can solve anything!</p>
+  </div>
+
+  <!-- Rule 1: Straight line -->
+  <div class="card">
+    <h2 style="color:var(--amber);">① Angles on a Straight Line = 180°</h2>
+    <p>All the angles sitting on top of a straight line always add up to <strong>180°</strong>.</p>
+    <div class="dia-wrap">
+      <svg viewBox="0 0 420 160" width="420" xmlns="http://www.w3.org/2000/svg">
+        <line x1="30" y1="110" x2="390" y2="110" stroke="#1C2B3A" stroke-width="3" stroke-linecap="round"/>
+        <!-- ray up-left -->
+        <line x1="160" y1="110" x2="80" y2="35" stroke="#E8A020" stroke-width="2.5"/>
+        <!-- ray up-mid -->
+        <line x1="160" y1="110" x2="220" y2="30" stroke="#1A7F7A" stroke-width="2.5"/>
+        <!-- arc a -->
+        <path d="M 135,110 A 28,28 0 0,1 148,85" fill="none" stroke="#E8A020" stroke-width="2"/>
+        <!-- arc b -->
+        <path d="M 148,83 A 28,28 0 0,1 180,82" fill="none" stroke="#1A7F7A" stroke-width="2"/>
+        <!-- arc c -->
+        <path d="M 183,84 A 28,28 0 0,1 188,110" fill="none" stroke="#D94F3D" stroke-width="2"/>
+        <text x="127" y="97" font-family="Playfair Display,serif" font-size="14" fill="#E8A020" font-weight="700">a</text>
+        <text x="160" y="76" font-family="Playfair Display,serif" font-size="14" fill="#1A7F7A" font-weight="700">b</text>
+        <text x="192" y="97" font-family="Playfair Display,serif" font-size="14" fill="#D94F3D" font-weight="700">c</text>
+        <text x="210" y="145" font-family="Nunito,sans-serif" font-size="15" fill="#1C2B3A" font-weight="700" text-anchor="middle">a + b + c = 180°</text>
+      </svg>
+    </div>
+    <div class="rulebox rb-amber">
+      <div class="rb-icon">📏</div>
+      <div class="rb-body"><strong>Rule:</strong> Angles on a straight line add up to <strong>180°</strong><br>
+      If a = 60° and b = 70°, then c = 180° − 60° − 70° = <strong>50°</strong></div>
+    </div>
+
+    <!-- Interactive: straight line -->
+    <div class="angle-interactive">
+      <label>Drag to set angle <strong>a</strong> — watch angle <strong>b</strong> update!</label>
+      <input type="range" min="10" max="170" value="70" id="lineSlider" oninput="updateLine()">
+      <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:0.5rem;">
+        <span class="angle-badge ab-amber">a = <span id="lineA">70</span>°</span>
+        <span style="font-size:1.1rem;color:var(--muted);align-self:center;">+</span>
+        <span class="angle-badge ab-teal">b = <span id="lineB">110</span>°</span>
+        <span style="font-size:1.1rem;color:var(--muted);align-self:center;">=</span>
+        <span class="angle-badge ab-red">180°</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rule 2: Angles at a point -->
+  <div class="card">
+    <h2 style="color:var(--teal);">② Angles at a Point = 360°</h2>
+    <p>All angles meeting at a single point form a full turn — <strong>360°</strong>.</p>
+    <div class="dia-wrap">
+      <svg viewBox="0 0 300 220" width="300" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="150" cy="110" r="90" fill="rgba(26,127,122,0.05)" stroke="rgba(26,127,122,0.2)" stroke-width="1.5"/>
+        <line x1="150" y1="110" x2="150" y2="25" stroke="#E8A020" stroke-width="2.5"/>
+        <line x1="150" y1="110" x2="230" y2="165" stroke="#1A7F7A" stroke-width="2.5"/>
+        <line x1="150" y1="110" x2="65" y2="175" stroke="#D94F3D" stroke-width="2.5"/>
+        <line x1="150" y1="110" x2="60" y2="55" stroke="#2B6CB0" stroke-width="2.5"/>
+        <path d="M 150,67 A 43,43 0 0,1 189,135" fill="rgba(232,160,32,0.15)" stroke="#E8A020" stroke-width="1.5"/>
+        <path d="M 189,135 A 43,43 0 0,1 107,153" fill="rgba(26,127,122,0.12)" stroke="#1A7F7A" stroke-width="1.5"/>
+        <path d="M 107,153 A 43,43 0 0,1 107,67" fill="rgba(217,79,61,0.12)" stroke="#D94F3D" stroke-width="1.5"/>
+        <path d="M 107,67 A 43,43 0 0,1 150,67" fill="rgba(43,108,176,0.12)" stroke="#2B6CB0" stroke-width="1.5"/>
+        <text x="178" y="98" font-family="Playfair Display,serif" font-size="13" fill="#E8A020" font-weight="700">a</text>
+        <text x="180" y="148" font-family="Playfair Display,serif" font-size="13" fill="#1A7F7A" font-weight="700">b</text>
+        <text x="108" y="158" font-family="Playfair Display,serif" font-size="13" fill="#D94F3D" font-weight="700">c</text>
+        <text x="99" y="82" font-family="Playfair Display,serif" font-size="13" fill="#2B6CB0" font-weight="700">d</text>
+        <text x="150" y="210" font-family="Nunito,sans-serif" font-size="14" fill="#1C2B3A" font-weight="700" text-anchor="middle">a + b + c + d = 360°</text>
+        <circle cx="150" cy="110" r="4" fill="#1C2B3A"/>
+      </svg>
+    </div>
+    <div class="rulebox rb-teal">
+      <div class="rb-icon">🔄</div>
+      <div class="rb-body"><strong>Rule:</strong> All angles around a point = <strong>360°</strong><br>
+      Think of a full spin — one complete turn is always 360°.</div>
+    </div>
+  </div>
+
+  <!-- Rule 3: Vertically opposite -->
+  <div class="card">
+    <h2 style="color:var(--red);">③ Vertically Opposite Angles are Equal</h2>
+    <p>When two straight lines cross, the angles <strong>across from each other</strong> are always equal.</p>
+    <div class="dia-wrap">
+      <svg viewBox="0 0 300 220" width="300" xmlns="http://www.w3.org/2000/svg">
+        <line x1="40" y1="40" x2="260" y2="185" stroke="#1C2B3A" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="260" y1="40" x2="40" y2="185" stroke="#1C2B3A" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- top arc a -->
+        <path d="M 135,100 A 22,22 0 0,1 165,100" fill="rgba(232,160,32,0.25)" stroke="#E8A020" stroke-width="2"/>
+        <!-- bottom arc a -->
+        <path d="M 135,115 A 22,22 0 0,0 165,115" fill="rgba(232,160,32,0.25)" stroke="#E8A020" stroke-width="2"/>
+        <!-- left arc b -->
+        <path d="M 130,107 A 22,22 0 0,0 130,108" fill="none"/>
+        <path d="M 128,100 A 24,24 0 0,0 128,115" fill="rgba(217,79,61,0.2)" stroke="#D94F3D" stroke-width="2"/>
+        <!-- right arc b -->
+        <path d="M 172,100 A 24,24 0 0,1 172,115" fill="rgba(217,79,61,0.2)" stroke="#D94F3D" stroke-width="2"/>
+        <text x="150" y="96" text-anchor="middle" font-family="Playfair Display,serif" font-size="15" fill="#E8A020" font-weight="700">a</text>
+        <text x="150" y="127" text-anchor="middle" font-family="Playfair Display,serif" font-size="15" fill="#E8A020" font-weight="700">a</text>
+        <text x="116" y="112" text-anchor="middle" font-family="Playfair Display,serif" font-size="15" fill="#D94F3D" font-weight="700">b</text>
+        <text x="184" y="112" text-anchor="middle" font-family="Playfair Display,serif" font-size="15" fill="#D94F3D" font-weight="700">b</text>
+        <text x="150" y="212" font-family="Nunito,sans-serif" font-size="13" fill="#1C2B3A" font-weight="700" text-anchor="middle">Vertically opposite angles are equal</text>
+      </svg>
+    </div>
+    <div class="rulebox rb-red">
+      <div class="rb-icon">✕</div>
+      <div class="rb-body"><strong>Rule:</strong> Vertically opposite angles are <strong>equal</strong>.<br>
+      If one angle is 55°, the angle directly opposite is also 55°.</div>
+    </div>
+    <div class="tip-box">Look for an "X" shape — the two angles across the X are always equal!</div>
+  </div>
+
+  <!-- Rule 4: Triangle -->
+  <div class="card">
+    <h2 style="color:var(--blue);">④ Angles in a Triangle = 180°</h2>
+    <p>The three angles inside any triangle always add up to exactly <strong>180°</strong>.</p>
+    <div class="dia-wrap">
+      <svg viewBox="0 0 360 200" width="360" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="180,20 330,170 30,170" fill="rgba(43,108,176,0.07)" stroke="#2B6CB0" stroke-width="2.5"/>
+        <path d="M 180,20 L 165,47 L 195,47 Z" fill="rgba(232,160,32,0.3)" stroke="#E8A020" stroke-width="1.5"/>
+        <path d="M 30,170 L 55,155 L 50,170" fill="rgba(26,127,122,0.3)" stroke="#1A7F7A" stroke-width="1.5"/>
+        <path d="M 330,170 L 310,157 L 310,170" fill="rgba(217,79,61,0.3)" stroke="#D94F3D" stroke-width="1.5"/>
+        <text x="180" y="63" text-anchor="middle" font-family="Playfair Display,serif" font-size="16" fill="#E8A020" font-weight="700">a</text>
+        <text x="62" y="165" font-family="Playfair Display,serif" font-size="16" fill="#1A7F7A" font-weight="700">b</text>
+        <text x="299" y="165" font-family="Playfair Display,serif" font-size="16" fill="#D94F3D" font-weight="700">c</text>
+        <text x="180" y="195" font-family="Nunito,sans-serif" font-size="14" fill="#1C2B3A" font-weight="700" text-anchor="middle">a + b + c = 180°</text>
+      </svg>
+    </div>
+    <div class="rulebox rb-blue">
+      <div class="rb-icon">🔺</div>
+      <div class="rb-body"><strong>Rule:</strong> Angles in a triangle = <strong>180°</strong><br>
+      If two angles are 60° and 80°, the third = 180° − 60° − 80° = <strong>40°</strong></div>
+    </div>
+  </div>
+
+  <!-- Rule 5: Quadrilateral -->
+  <div class="card">
+    <h2 style="color:var(--purple);">⑤ Angles in a Quadrilateral = 360°</h2>
+    <p>Any 4-sided shape (square, rectangle, parallelogram…) has angles that add up to <strong>360°</strong>.</p>
+    <div class="dia-wrap">
+      <svg viewBox="0 0 360 200" width="360" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="60,30 310,30 270,170 30,170" fill="rgba(123,79,158,0.07)" stroke="#7B4F9E" stroke-width="2.5"/>
+        <!-- corner arcs -->
+        <path d="M 60,30 L 82,30 Q 80,52 60,50 Z" fill="rgba(232,160,32,0.25)" stroke="#E8A020" stroke-width="1.5"/>
+        <path d="M 310,30 L 290,30 Q 292,52 310,52 Z" fill="rgba(26,127,122,0.25)" stroke="#1A7F7A" stroke-width="1.5"/>
+        <path d="M 270,170 L 255,150 Q 250,168 270,170 Z" fill="rgba(217,79,61,0.25)" stroke="#D94F3D" stroke-width="1.5"/>
+        <path d="M 30,170 L 50,150 Q 52,168 30,170 Z" fill="rgba(43,108,176,0.25)" stroke="#2B6CB0" stroke-width="1.5"/>
+        <text x="72" y="50" font-family="Playfair Display,serif" font-size="15" fill="#E8A020" font-weight="700">a</text>
+        <text x="286" y="52" font-family="Playfair Display,serif" font-size="15" fill="#1A7F7A" font-weight="700">b</text>
+        <text x="248" y="162" font-family="Playfair Display,serif" font-size="15" fill="#D94F3D" font-weight="700">c</text>
+        <text x="42" y="162" font-family="Playfair Display,serif" font-size="15" fill="#2B6CB0" font-weight="700">d</text>
+        <text x="180" y="196" font-family="Nunito,sans-serif" font-size="14" fill="#1C2B3A" font-weight="700" text-anchor="middle">a + b + c + d = 360°</text>
+      </svg>
+    </div>
+    <div class="rulebox rb-purple">
+      <div class="rb-icon">⬛</div>
+      <div class="rb-body"><strong>Rule:</strong> Angles in a quadrilateral = <strong>360°</strong><br>
+      Three angles 90° + 90° + 110° → fourth = 360° − 290° = <strong>70°</strong></div>
+    </div>
+    <div class="tip-box">Quadrilateral = 2 × triangle. So 2 × 180° = 360°. Easy to remember!</div>
+  </div>
+
+  <!-- Worked example: finding unknown angle -->
+  <div class="card">
+    <h2 style="color:var(--green);">📝 Worked Example</h2>
+    <div class="worked-q">
+      Two angles on a straight line are 65° and <em>x</em>°. Find <em>x</em>.
+    </div>
+    <div class="steps">
+      <div class="step"><div class="step-num sn-amber">1</div><div class="step-text">Rule: Angles on a straight line = <strong>180°</strong></div></div>
+      <div class="step"><div class="step-num sn-amber">2</div><div class="step-text">Write: 65 + x = 180</div></div>
+      <div class="step"><div class="step-num sn-amber">3</div><div class="step-text">x = 180 − 65 = <strong>115°  ✅</strong></div></div>
+    </div>
+    <div class="worked-q" style="margin-top:0.8rem;">
+      In a triangle, two angles are 48° and 76°. Find the third angle.
+    </div>
+    <button class="reveal-btn" onclick="toggleReveal('rv1',this)">👀 Show Working</button>
+    <div class="reveal-content" id="rv1">
+      <div class="steps">
+        <div class="step"><div class="step-num sn-teal">1</div><div class="step-text">Rule: Angles in a triangle = <strong>180°</strong></div></div>
+        <div class="step"><div class="step-num sn-teal">2</div><div class="step-text">48 + 76 + third = 180</div></div>
+        <div class="step"><div class="step-num sn-teal">3</div><div class="step-text">124 + third = 180 → third = 180 − 124 = <strong>56°  ✅</strong></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION 2 — TRIANGLES
+══════════════════════════════════════════ -->
+<div class="section" id="section-triangles">
+  <div class="card">
+    <div class="slabel">Step 2 — Triangles</div>
+    <h2>Types of Triangles</h2>
+    <p>Click each triangle card to see its properties. Knowing these helps you find unknown angles faster!</p>
+  </div>
+
+  <div class="card">
+    <div class="three-col" id="triCards">
+      <!-- equilateral -->
+      <div class="shape-card" onclick="showTri('equilateral',this)">
+        <svg viewBox="0 0 90 80" width="80" height="72">
+          <polygon points="45,8 82,70 8,70" fill="rgba(26,127,122,0.12)" stroke="#1A7F7A" stroke-width="2.5"/>
+          <text x="45" y="42" text-anchor="middle" font-family="Playfair Display,serif" font-size="11" fill="#1A7F7A" font-weight="700">60°</text>
+          <text x="16" y="68" font-family="Playfair Display,serif" font-size="10" fill="#1A7F7A" font-weight="700">60°</text>
+          <text x="64" y="68" font-family="Playfair Display,serif" font-size="10" fill="#1A7F7A" font-weight="700">60°</text>
+        </svg>
+        <div class="sc-name">Equilateral</div>
+        <div class="sc-hint">all sides equal</div>
+      </div>
+      <!-- isosceles -->
+      <div class="shape-card" onclick="showTri('isosceles',this)">
+        <svg viewBox="0 0 90 80" width="80" height="72">
+          <polygon points="45,8 78,70 12,70" fill="rgba(232,160,32,0.12)" stroke="#E8A020" stroke-width="2.5"/>
+          <text x="45" y="34" text-anchor="middle" font-family="Playfair Display,serif" font-size="10" fill="#E8A020" font-weight="700">40°</text>
+          <text x="18" y="68" font-family="Playfair Display,serif" font-size="10" fill="#E8A020" font-weight="700">70°</text>
+          <text x="62" y="68" font-family="Playfair Display,serif" font-size="10" fill="#E8A020" font-weight="700">70°</text>
+          <!-- tick marks on equal sides -->
+          <line x1="31" y1="39" x2="28" y2="43" stroke="#E8A020" stroke-width="2"/>
+          <line x1="59" y1="39" x2="62" y2="43" stroke="#E8A020" stroke-width="2"/>
+        </svg>
+        <div class="sc-name">Isosceles</div>
+        <div class="sc-hint">2 sides equal</div>
+      </div>
+      <!-- right-angled -->
+      <div class="shape-card" onclick="showTri('right',this)">
+        <svg viewBox="0 0 90 80" width="80" height="72">
+          <polygon points="15,10 75,70 15,70" fill="rgba(217,79,61,0.10)" stroke="#D94F3D" stroke-width="2.5"/>
+          <rect x="15" y="58" width="12" height="12" fill="none" stroke="#D94F3D" stroke-width="1.8"/>
+          <text x="38" y="34" font-family="Playfair Display,serif" font-size="10" fill="#D94F3D" font-weight="700">x°</text>
+          <text x="16" y="46" font-family="Playfair Display,serif" font-size="9" fill="#D94F3D" font-weight="700">90°</text>
+          <text x="46" y="68" font-family="Playfair Display,serif" font-size="10" fill="#D94F3D" font-weight="700">y°</text>
+        </svg>
+        <div class="sc-name">Right-Angled</div>
+        <div class="sc-hint">one 90° angle</div>
+      </div>
+      <!-- scalene -->
+      <div class="shape-card" onclick="showTri('scalene',this)">
+        <svg viewBox="0 0 90 80" width="80" height="72">
+          <polygon points="20,10 80,65 10,70" fill="rgba(43,108,176,0.10)" stroke="#2B6CB0" stroke-width="2.5"/>
+          <text x="24" y="28" font-family="Playfair Display,serif" font-size="10" fill="#2B6CB0" font-weight="700">a°</text>
+          <text x="60" y="62" font-family="Playfair Display,serif" font-size="10" fill="#2B6CB0" font-weight="700">b°</text>
+          <text x="18" y="68" font-family="Playfair Display,serif" font-size="10" fill="#2B6CB0" font-weight="700">c°</text>
+        </svg>
+        <div class="sc-name">Scalene</div>
+        <div class="sc-hint">all sides different</div>
+      </div>
+    </div>
+
+    <div class="shape-info" id="triInfo"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="color:var(--amber);">📝 Finding Angles in Triangles</h2>
+    <div class="worked-q">An isosceles triangle has one angle of 40° at the top. Find the base angles.</div>
+    <div class="steps">
+      <div class="step"><div class="step-num sn-amber">1</div><div class="step-text">Isosceles triangle → <strong>base angles are equal</strong></div></div>
+      <div class="step"><div class="step-num sn-amber">2</div><div class="step-text">Let each base angle = b. Then: 40 + b + b = 180</div></div>
+      <div class="step"><div class="step-num sn-amber">3</div><div class="step-text">40 + 2b = 180 → 2b = 140 → b = <strong>70°  ✅</strong></div></div>
+    </div>
+    <div class="worked-q" style="margin-top:0.8rem;">A right-angled triangle has one angle of 35°. Find the third angle.</div>
+    <button class="reveal-btn" onclick="toggleReveal('rv2',this)">👀 Show Working</button>
+    <div class="reveal-content" id="rv2">
+      <div class="steps">
+        <div class="step"><div class="step-num sn-teal">1</div><div class="step-text">Right-angled → one angle is already <strong>90°</strong></div></div>
+        <div class="step"><div class="step-num sn-teal">2</div><div class="step-text">90 + 35 + third = 180</div></div>
+        <div class="step"><div class="step-num sn-teal">3</div><div class="step-text">125 + third = 180 → third = <strong>55°  ✅</strong></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION 3 — QUADRILATERALS
+══════════════════════════════════════════ -->
+<div class="section" id="section-quads">
+  <div class="card">
+    <div class="slabel">Step 3 — 4-Sided Shapes</div>
+    <h2>Types of Quadrilaterals</h2>
+    <p>Click each shape to see its angle properties. These come up a lot in exam questions!</p>
+  </div>
+
+  <div class="card">
+    <div class="three-col" id="quadCards">
+      <div class="shape-card" onclick="showQuad('square',this)">
+        <svg viewBox="0 0 80 80" width="70" height="70">
+          <rect x="10" y="10" width="60" height="60" fill="rgba(26,127,122,0.12)" stroke="#1A7F7A" stroke-width="2.5"/>
+          <rect x="10" y="10" width="12" height="12" fill="none" stroke="#1A7F7A" stroke-width="1.5"/>
+          <rect x="58" y="10" width="12" height="12" fill="none" stroke="#1A7F7A" stroke-width="1.5"/>
+          <rect x="10" y="58" width="12" height="12" fill="none" stroke="#1A7F7A" stroke-width="1.5"/>
+          <rect x="58" y="58" width="12" height="12" fill="none" stroke="#1A7F7A" stroke-width="1.5"/>
+        </svg>
+        <div class="sc-name">Square</div>
+        <div class="sc-hint">all equal, 4 × 90°</div>
+      </div>
+      <div class="shape-card" onclick="showQuad('rectangle',this)">
+        <svg viewBox="0 0 90 70" width="80" height="65">
+          <rect x="5" y="12" width="80" height="46" fill="rgba(43,108,176,0.10)" stroke="#2B6CB0" stroke-width="2.5"/>
+          <rect x="5" y="12" width="12" height="12" fill="none" stroke="#2B6CB0" stroke-width="1.5"/>
+          <rect x="73" y="12" width="12" height="12" fill="none" stroke="#2B6CB0" stroke-width="1.5"/>
+          <rect x="5" y="46" width="12" height="12" fill="none" stroke="#2B6CB0" stroke-width="1.5"/>
+          <rect x="73" y="46" width="12" height="12" fill="none" stroke="#2B6CB0" stroke-width="1.5"/>
+        </svg>
+        <div class="sc-name">Rectangle</div>
+        <div class="sc-hint">4 × 90°</div>
+      </div>
+      <div class="shape-card" onclick="showQuad('parallelogram',this)">
+        <svg viewBox="0 0 90 70" width="80" height="65">
+          <polygon points="20,12 85,12 70,58 5,58" fill="rgba(232,160,32,0.12)" stroke="#E8A020" stroke-width="2.5"/>
+          <text x="22" y="32" font-family="Playfair Display,serif" font-size="9" fill="#E8A020">a</text>
+          <text x="68" y="32" font-family="Playfair Display,serif" font-size="9" fill="#E8A020">b</text>
+          <text x="8" y="54" font-family="Playfair Display,serif" font-size="9" fill="#E8A020">b</text>
+          <text x="60" y="54" font-family="Playfair Display,serif" font-size="9" fill="#E8A020">a</text>
+        </svg>
+        <div class="sc-name">Parallelogram</div>
+        <div class="sc-hint">opposite angles equal</div>
+      </div>
+      <div class="shape-card" onclick="showQuad('rhombus',this)">
+        <svg viewBox="0 0 80 80" width="70" height="70">
+          <polygon points="40,8 72,40 40,72 8,40" fill="rgba(217,79,61,0.10)" stroke="#D94F3D" stroke-width="2.5"/>
+          <text x="40" y="24" text-anchor="middle" font-family="Playfair Display,serif" font-size="10" fill="#D94F3D">a</text>
+          <text x="58" y="43" font-family="Playfair Display,serif" font-size="10" fill="#D94F3D">b</text>
+          <text x="40" y="62" text-anchor="middle" font-family="Playfair Display,serif" font-size="10" fill="#D94F3D">a</text>
+          <text x="12" y="43" font-family="Playfair Display,serif" font-size="10" fill="#D94F3D">b</text>
+        </svg>
+        <div class="sc-name">Rhombus</div>
+        <div class="sc-hint">all sides equal</div>
+      </div>
+      <div class="shape-card" onclick="showQuad('trapezoid',this)">
+        <svg viewBox="0 0 90 70" width="80" height="65">
+          <polygon points="25,12 65,12 85,58 5,58" fill="rgba(123,79,158,0.10)" stroke="#7B4F9E" stroke-width="2.5"/>
+          <text x="28" y="30" font-family="Playfair Display,serif" font-size="9" fill="#7B4F9E">a</text>
+          <text x="60" y="30" font-family="Playfair Display,serif" font-size="9" fill="#7B4F9E">b</text>
+          <text x="8" y="55" font-family="Playfair Display,serif" font-size="9" fill="#7B4F9E">c</text>
+          <text x="72" y="55" font-family="Playfair Display,serif" font-size="9" fill="#7B4F9E">d</text>
+        </svg>
+        <div class="sc-name">Trapezoid</div>
+        <div class="sc-hint">1 pair parallel sides</div>
+      </div>
+    </div>
+    <div class="shape-info" id="quadInfo"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="color:var(--purple);">📝 Worked Example</h2>
+    <div class="worked-q">A parallelogram has one angle of 65°. Find the other three angles.</div>
+    <div class="steps">
+      <div class="step"><div class="step-num sn-amber">1</div><div class="step-text">Parallelogram: <strong>opposite angles are equal</strong></div></div>
+      <div class="step"><div class="step-num sn-amber">2</div><div class="step-text"><strong>Co-interior angles</strong> (same side) add up to <strong>180°</strong></div></div>
+      <div class="step"><div class="step-num sn-amber">3</div><div class="step-text">Angle opposite to 65° = <strong>65°</strong></div></div>
+      <div class="step"><div class="step-num sn-amber">4</div><div class="step-text">Other two angles = 180° − 65° = <strong>115°</strong> each</div></div>
+    </div>
+    <div class="tip-box">In a parallelogram: opposite angles are equal, and adjacent angles add up to 180°.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION 4 — PARALLEL LINES
+══════════════════════════════════════════ -->
+<div class="section" id="section-parallel">
+  <div class="card">
+    <div class="slabel">Step 4 — Parallel Lines</div>
+    <h2>Angles in Parallel Lines</h2>
+    <p>When a line (called a <em>transversal</em>) cuts across two parallel lines, it creates special angle pairs. These are <strong>very common in P6 exams!</strong></p>
+  </div>
+
+  <div class="card">
+    <div class="parallel-tabs" id="paraTabs">
+      <button class="para-tab active" onclick="showPara('corresponding',this)">Corresponding</button>
+      <button class="para-tab" onclick="showPara('alternate',this)">Alternate</button>
+      <button class="para-tab" onclick="showPara('cointerior',this)">Co-interior</button>
+    </div>
+
+    <div id="paraContent">
+      <!-- will be filled by JS -->
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="color:var(--teal);">📝 Worked Example</h2>
+    <div class="worked-q">
+      AB and CD are parallel lines. A transversal crosses them. One angle formed is 55°. Find the alternate angle and the co-interior angle.
+    </div>
+    <div class="steps">
+      <div class="step"><div class="step-num sn-teal">1</div><div class="step-text"><strong>Alternate angles</strong> are equal → alternate angle = <strong>55°</strong></div></div>
+      <div class="step"><div class="step-num sn-teal">2</div><div class="step-text"><strong>Co-interior angles</strong> add up to 180° → co-interior = 180° − 55° = <strong>125°</strong></div></div>
+    </div>
+    <div class="tip-box">Alternate angles look like the letter Z (or N). Co-interior angles look like the letter C (or U).</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION 5 — PRACTICE
+══════════════════════════════════════════ -->
+<div class="section" id="section-practice">
+  <div class="card">
+    <div class="slabel">Step 5 — Try It Yourself</div>
+    <h2>Practice Problems</h2>
+    <p>Type your answer and press <strong>Check</strong>. All answers should be whole numbers (degrees).</p>
+  </div>
+
+  <div class="card">
+    <div class="pq-wrap">
+      <div class="pq-tag">Problem 1 — Straight Line</div>
+      <div class="pq-text">Two angles on a straight line are <strong>72°</strong> and <strong>x°</strong>. Find x.</div>
+      <div class="dia-wrap" style="margin:0.4rem 0;">
+        <svg viewBox="0 0 280 100" width="260" xmlns="http://www.w3.org/2000/svg">
+          <line x1="20" y1="70" x2="260" y2="70" stroke="#1C2B3A" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="120" y1="70" x2="85" y2="20" stroke="#E8A020" stroke-width="2.5"/>
+          <path d="M 100,70 A 22,22 0 0,1 108,50" fill="rgba(232,160,32,0.2)" stroke="#E8A020" stroke-width="1.5"/>
+          <text x="95" y="58" font-family="Playfair Display,serif" font-size="13" fill="#E8A020" font-weight="700">72°</text>
+          <path d="M 133,50 A 22,22 0 0,1 142,70" fill="rgba(217,79,61,0.2)" stroke="#D94F3D" stroke-width="1.5"/>
+          <text x="140" y="60" font-family="Playfair Display,serif" font-size="13" fill="#D94F3D" font-weight="700">x°</text>
+        </svg>
+      </div>
+      <div class="input-row">
+        <input class="pq-input" type="number" id="pr1" placeholder="?">
+        <span class="pq-unit">degrees</span>
+        <button class="pq-btn" onclick="checkPr(1,108,'180 − 72 = 108°')">Check ✓</button>
+      </div>
+      <div class="pq-fb" id="pfb1"></div>
+    </div>
+
+    <div class="pq-wrap">
+      <div class="pq-tag">Problem 2 — Angles at a Point</div>
+      <div class="pq-text">Three angles at a point are <strong>120°</strong>, <strong>95°</strong>, and <strong>y°</strong>. Find y.</div>
+      <div class="input-row">
+        <input class="pq-input" type="number" id="pr2" placeholder="?">
+        <span class="pq-unit">degrees</span>
+        <button class="pq-btn" onclick="checkPr(2,145,'360 − 120 − 95 = 145°')">Check ✓</button>
+      </div>
+      <div class="pq-fb" id="pfb2"></div>
+    </div>
+
+    <div class="pq-wrap">
+      <div class="pq-tag">Problem 3 — Triangle</div>
+      <div class="pq-text">A triangle has angles <strong>55°</strong> and <strong>80°</strong>. Find the third angle.</div>
+      <div class="input-row">
+        <input class="pq-input" type="number" id="pr3" placeholder="?">
+        <span class="pq-unit">degrees</span>
+        <button class="pq-btn" onclick="checkPr(3,45,'180 − 55 − 80 = 45°')">Check ✓</button>
+      </div>
+      <div class="pq-fb" id="pfb3"></div>
+    </div>
+
+    <div class="pq-wrap">
+      <div class="pq-tag">Problem 4 — Isosceles Triangle</div>
+      <div class="pq-text">An isosceles triangle has a top angle of <strong>50°</strong>. Find one of the base angles.</div>
+      <div class="input-row">
+        <input class="pq-input" type="number" id="pr4" placeholder="?">
+        <span class="pq-unit">degrees</span>
+        <button class="pq-btn" onclick="checkPr(4,65,'(180 − 50) ÷ 2 = 65°')">Check ✓</button>
+      </div>
+      <div class="pq-fb" id="pfb4"></div>
+    </div>
+
+    <div class="pq-wrap">
+      <div class="pq-tag">Problem 5 — Quadrilateral</div>
+      <div class="pq-text">A quadrilateral has three angles: <strong>100°</strong>, <strong>85°</strong>, <strong>90°</strong>. Find the fourth angle.</div>
+      <div class="input-row">
+        <input class="pq-input" type="number" id="pr5" placeholder="?">
+        <span class="pq-unit">degrees</span>
+        <button class="pq-btn" onclick="checkPr(5,85,'360 − 100 − 85 − 90 = 85°')">Check ✓</button>
+      </div>
+      <div class="pq-fb" id="pfb5"></div>
+    </div>
+
+    <div class="pq-wrap">
+      <div class="pq-tag">Problem 6 — Vertically Opposite</div>
+      <div class="pq-text">Two lines intersect. One angle is <strong>38°</strong>. Find the vertically opposite angle.</div>
+      <div class="input-row">
+        <input class="pq-input" type="number" id="pr6" placeholder="?">
+        <span class="pq-unit">degrees</span>
+        <button class="pq-btn" onclick="checkPr(6,38,'Vertically opposite angles are equal → 38°')">Check ✓</button>
+      </div>
+      <div class="pq-fb" id="pfb6"></div>
+    </div>
+
+    <div class="pq-wrap">
+      <div class="pq-tag">Problem 7 — Parallel Lines (Alternate)</div>
+      <div class="pq-text">AB ∥ CD. A transversal creates an angle of <strong>67°</strong>. Find the alternate angle.</div>
+      <div class="input-row">
+        <input class="pq-input" type="number" id="pr7" placeholder="?">
+        <span class="pq-unit">degrees</span>
+        <button class="pq-btn" onclick="checkPr(7,67,'Alternate angles are equal → 67°')">Check ✓</button>
+      </div>
+      <div class="pq-fb" id="pfb7"></div>
+    </div>
+
+    <div class="pq-wrap">
+      <div class="pq-tag">Problem 8 — Parallel Lines (Co-interior)</div>
+      <div class="pq-text">AB ∥ CD. One co-interior angle is <strong>112°</strong>. Find the other co-interior angle.</div>
+      <div class="input-row">
+        <input class="pq-input" type="number" id="pr8" placeholder="?">
+        <span class="pq-unit">degrees</span>
+        <button class="pq-btn" onclick="checkPr(8,68,'Co-interior angles add to 180° → 180 − 112 = 68°')">Check ✓</button>
+      </div>
+      <div class="pq-fb" id="pfb8"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION 6 — QUIZ
+══════════════════════════════════════════ -->
+<div class="section" id="section-quiz">
+  <div class="card">
+    <div id="quizMain">
+      <div id="qTag" class="slabel">Question 1 of 10</div>
+      <div id="quizQ" class="quiz-q"></div>
+      <div id="quizOpts" class="quiz-opts"></div>
+      <div id="qfb" class="qfb"></div>
+      <div class="quiz-nav">
+        <span class="score-badge" id="scoreD">0 ★</span>
+        <button id="nxtBtn" onclick="nextQ()" disabled>Next →</button>
+      </div>
+      <div class="qprog" id="qprog"></div>
+    </div>
+    <div id="quizEnd" style="display:none;">
+      <div class="end-card">
+        <div class="big-emoji" id="eEmoji"></div>
+        <h2>Quiz Complete!</h2>
+        <div class="stars" id="eStars"></div>
+        <p id="eMsg" style="color:var(--muted); font-size:0.97rem; margin:0.4rem 0;"></p>
+        <button class="restart-btn" onclick="restartQuiz()">🔁 Try Again</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION 7 — CHEAT SHEET
+══════════════════════════════════════════ -->
+<div class="section" id="section-cheat">
+  <div class="card">
+    <div class="slabel">Quick Reference</div>
+    <h2>📋 Formula &amp; Rules Cheat Sheet</h2>
+    <p style="margin-bottom:1rem;">All geometry rules in one place. Great for revision!</p>
+    <div class="cheat-grid">
+      <div class="cheat-card">
+        <div class="cc-title">Straight Line</div>
+        <span class="cc-rule ab-amber">= 180°</span>
+        <div style="font-size:0.78rem;color:var(--muted);margin-top:6px;">angles on one side of a line</div>
+      </div>
+      <div class="cheat-card">
+        <div class="cc-title">Angles at a Point</div>
+        <span class="cc-rule ab-teal">= 360°</span>
+        <div style="font-size:0.78rem;color:var(--muted);margin-top:6px;">full turn around a point</div>
+      </div>
+      <div class="cheat-card">
+        <div class="cc-title">Vertically Opposite</div>
+        <span class="cc-rule ab-red">Equal</span>
+        <div style="font-size:0.78rem;color:var(--muted);margin-top:6px;">X-shape: across angles match</div>
+      </div>
+      <div class="cheat-card">
+        <div class="cc-title">Triangle (any)</div>
+        <span class="cc-rule ab-blue">= 180°</span>
+        <div style="font-size:0.78rem;color:var(--muted);margin-top:6px;">all three angles inside</div>
+      </div>
+      <div class="cheat-card">
+        <div class="cc-title">Quadrilateral (any)</div>
+        <span class="cc-rule ab-purple">= 360°</span>
+        <div style="font-size:0.78rem;color:var(--muted);margin-top:6px;">all four angles inside</div>
+      </div>
+      <div class="cheat-card">
+        <div class="cc-title">Equilateral △</div>
+        <span class="cc-rule ab-teal">3 × 60°</span>
+        <div style="font-size:0.78rem;color:var(--muted);margin-top:6px;">all angles and sides equal</div>
+      </div>
+      <div class="cheat-card">
+        <div class="cc-title">Isosceles △</div>
+        <span class="cc-rule ab-amber">base = base</span>
+        <div style="font-size:0.78rem;color:var(--muted);margin-top:6px;">two equal sides → two equal base angles</div>
+      </div>
+      <div class="cheat-card">
+        <div class="cc-title">Right-Angled △</div>
+        <span class="cc-rule ab-red">90° + x + y</span>
+        <div style="font-size:0.78rem;color:var(--muted);margin-top:6px;">other two angles add to 90°</div>
+      </div>
+      <div class="cheat-card">
+        <div class="cc-title">Parallelogram</div>
+        <span class="cc-rule ab-amber">opp. = equal</span>
+        <div style="font-size:0.78rem;color:var(--muted);margin-top:6px;">adj. angles add to 180°</div>
+      </div>
+      <div class="cheat-card">
+        <div class="cc-title">Corresponding ∠s</div>
+        <span class="cc-rule ab-teal">Equal (F shape)</span>
+        <div style="font-size:0.78rem;color:var(--muted);margin-top:6px;">parallel lines, same side</div>
+      </div>
+      <div class="cheat-card">
+        <div class="cc-title">Alternate ∠s</div>
+        <span class="cc-rule ab-blue">Equal (Z shape)</span>
+        <div style="font-size:0.78rem;color:var(--muted);margin-top:6px;">parallel lines, opposite sides</div>
+      </div>
+      <div class="cheat-card">
+        <div class="cc-title">Co-interior ∠s</div>
+        <span class="cc-rule ab-purple">= 180° (C shape)</span>
+        <div style="font-size:0.78rem;color:var(--muted);margin-top:6px;">parallel lines, same side</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="color:var(--red);">⚠️ Common Exam Mistakes</h2>
+    <div class="steps">
+      <div class="step"><div class="step-num sn-red">!</div><div class="step-text">Using 180° for quadrilateral angles — remember it's <strong>360°</strong> for 4-sided shapes!</div></div>
+      <div class="step"><div class="step-num sn-red">!</div><div class="step-text">Forgetting that isosceles triangles have <strong>two equal base angles</strong> — always check if two sides are equal!</div></div>
+      <div class="step"><div class="step-num sn-red">!</div><div class="step-text">Confusing alternate (Z, equal) and co-interior (C, adds to 180°) angles in parallel lines</div></div>
+      <div class="step"><div class="step-num sn-red">!</div><div class="step-text">Not stating the <strong>property used</strong> in working — always write the rule (e.g. "angles on straight line = 180°")</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ──────────── SCRIPT ──────────── -->
+<script>
+// ── TABS ──
+function showTab(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('section-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── REVEAL ──
+function toggleReveal(id, btn) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+  btn.textContent = el.classList.contains('open') ? '🙈 Hide Working' : '👀 Show Working';
+}
+
+// ── STRAIGHT LINE SLIDER ──
+function updateLine() {
+  const a = +document.getElementById('lineSlider').value;
+  const b = 180 - a;
+  document.getElementById('lineA').textContent = a;
+  document.getElementById('lineB').textContent = b;
+}
+updateLine();
+
+// ── TRIANGLE INFO ──
+const triData = {
+  equilateral: {
+    title: '✅ Equilateral Triangle',
+    facts: ['All <strong>3 sides are equal</strong> in length','All <strong>3 angles = 60°</strong>','Total: 60° + 60° + 60° = 180°','Looks the same from any direction — very symmetrical!']
+  },
+  isosceles: {
+    title: '✅ Isosceles Triangle',
+    facts: ['<strong>2 sides are equal</strong> in length','The <strong>2 base angles are equal</strong>','Top angle can be any size','Key trick: base angle = (180° − top angle) ÷ 2']
+  },
+  right: {
+    title: '✅ Right-Angled Triangle',
+    facts: ['Has exactly <strong>one 90° angle</strong>','The other two angles add up to <strong>90°</strong>','The longest side (opposite 90°) is called the hypotenuse','Commonly seen in PSLE problems!']
+  },
+  scalene: {
+    title: '✅ Scalene Triangle',
+    facts: ['<strong>All 3 sides are different</strong> lengths','<strong>All 3 angles are different</strong>','Still adds up to 180°','No special shortcut — just use angle sum = 180°']
+  }
+};
+function showTri(key, cardEl) {
+  document.querySelectorAll('#triCards .shape-card').forEach(c => c.classList.remove('active-card'));
+  cardEl.classList.add('active-card');
+  const d = triData[key];
+  const box = document.getElementById('triInfo');
+  box.innerHTML = `<h3 style="color:var(--amber)">${d.title}</h3><ul>${d.facts.map(f=>`<li>${f}</li>`).join('')}</ul>`;
+  box.classList.add('open');
+}
+
+// ── QUAD INFO ──
+const quadData = {
+  square: {
+    title: '✅ Square',
+    facts: ['All <strong>4 sides equal</strong>','All <strong>4 angles = 90°</strong>','Opposite sides are <strong>parallel</strong>','Diagonals bisect at right angles']
+  },
+  rectangle: {
+    title: '✅ Rectangle',
+    facts: ['Opposite sides are <strong>equal and parallel</strong>','All <strong>4 angles = 90°</strong>','Diagonals are equal in length','A square is a special type of rectangle']
+  },
+  parallelogram: {
+    title: '✅ Parallelogram',
+    facts: ['Opposite sides are <strong>equal and parallel</strong>','<strong>Opposite angles are equal</strong> (e.g. top-left = bottom-right)','<strong>Adjacent angles add to 180°</strong>','Diagonals bisect each other']
+  },
+  rhombus: {
+    title: '✅ Rhombus',
+    facts: ['All <strong>4 sides equal</strong> (like a square, but slanted)','<strong>Opposite angles are equal</strong>','<strong>Adjacent angles add to 180°</strong>','A square is a special type of rhombus']
+  },
+  trapezoid: {
+    title: '✅ Trapezoid (Trapezium)',
+    facts: ['<strong>One pair</strong> of opposite sides are parallel','The other pair are not parallel','Angles on the same side of a leg add to 180°','No other special angle shortcuts']
+  }
+};
+function showQuad(key, cardEl) {
+  document.querySelectorAll('#quadCards .shape-card').forEach(c => c.classList.remove('active-card'));
+  cardEl.classList.add('active-card');
+  const d = quadData[key];
+  const box = document.getElementById('quadInfo');
+  box.innerHTML = `<h3 style="color:var(--purple)">${d.title}</h3><ul>${d.facts.map(f=>`<li>${f}</li>`).join('')}</ul>`;
+  box.classList.add('open');
+}
+
+// ── PARALLEL LINES ──
+const paraData = {
+  corresponding: {
+    label: 'Corresponding Angles (F-shape)',
+    rule: 'Equal',
+    color: '#1A7F7A',
+    bg: '#E0F5F4',
+    desc: 'Corresponding angles are in the same position at each intersection. They look like an <strong>F</strong> or <strong>⊢</strong> shape. They are <strong>equal</strong>.',
+    svg: `<svg viewBox="0 0 300 200" width="280" xmlns="http://www.w3.org/2000/svg">
+      <line x1="30" y1="60" x2="270" y2="60" stroke="#1C2B3A" stroke-width="2.5"/>
+      <line x1="30" y1="140" x2="270" y2="140" stroke="#1C2B3A" stroke-width="2.5"/>
+      <line x1="140" y1="10" x2="180" y2="190" stroke="#7B4F9E" stroke-width="2.5"/>
+      <text x="30" y="52" font-family="Nunito,sans-serif" font-size="11" fill="#1C2B3A" font-weight="700">Line 1 (parallel)</text>
+      <text x="30" y="132" font-family="Nunito,sans-serif" font-size="11" fill="#1C2B3A" font-weight="700">Line 2 (parallel)</text>
+      <path d="M 148,60 A 18,18 0 0,1 160,78" fill="rgba(26,127,122,0.3)" stroke="#1A7F7A" stroke-width="2"/>
+      <path d="M 157,140 A 18,18 0 0,1 169,158" fill="rgba(26,127,122,0.3)" stroke="#1A7F7A" stroke-width="2"/>
+      <text x="164" y="78" font-family="Playfair Display,serif" font-size="14" fill="#1A7F7A" font-weight="700">a</text>
+      <text x="172" y="158" font-family="Playfair Display,serif" font-size="14" fill="#1A7F7A" font-weight="700">a</text>
+      <text x="150" y="196" font-family="Nunito,sans-serif" font-size="13" fill="#1C2B3A" font-weight="700" text-anchor="middle">Corresponding ∠s are equal  (a = a)</text>
+    </svg>`
+  },
+  alternate: {
+    label: 'Alternate Angles (Z-shape)',
+    rule: 'Equal',
+    color: '#2B6CB0',
+    bg: '#EBF4FF',
+    desc: 'Alternate angles are on <strong>opposite sides</strong> of the transversal, between the parallel lines. They make a <strong>Z</strong> or <strong>N</strong> shape. They are <strong>equal</strong>.',
+    svg: `<svg viewBox="0 0 300 200" width="280" xmlns="http://www.w3.org/2000/svg">
+      <line x1="30" y1="60" x2="270" y2="60" stroke="#1C2B3A" stroke-width="2.5"/>
+      <line x1="30" y1="140" x2="270" y2="140" stroke="#1C2B3A" stroke-width="2.5"/>
+      <line x1="100" y1="10" x2="200" y2="190" stroke="#7B4F9E" stroke-width="2.5"/>
+      <path d="M 108,60 A 20,20 0 0,0 120,42" fill="rgba(43,108,176,0.25)" stroke="#2B6CB0" stroke-width="2"/>
+      <path d="M 160,140 A 20,20 0 0,1 172,158" fill="rgba(43,108,176,0.25)" stroke="#2B6CB0" stroke-width="2"/>
+      <text x="118" y="42" font-family="Playfair Display,serif" font-size="14" fill="#2B6CB0" font-weight="700">b</text>
+      <text x="174" y="158" font-family="Playfair Display,serif" font-size="14" fill="#2B6CB0" font-weight="700">b</text>
+      <text x="150" y="196" font-family="Nunito,sans-serif" font-size="13" fill="#1C2B3A" font-weight="700" text-anchor="middle">Alternate ∠s are equal  (b = b)</text>
+    </svg>`
+  },
+  cointerior: {
+    label: 'Co-interior Angles (C-shape)',
+    rule: '= 180°',
+    color: '#D94F3D',
+    bg: '#FDECEA',
+    desc: 'Co-interior angles are on the <strong>same side</strong> of the transversal, between the two parallel lines. They form a <strong>C</strong> shape. They add up to <strong>180°</strong>.',
+    svg: `<svg viewBox="0 0 300 200" width="280" xmlns="http://www.w3.org/2000/svg">
+      <line x1="30" y1="60" x2="270" y2="60" stroke="#1C2B3A" stroke-width="2.5"/>
+      <line x1="30" y1="140" x2="270" y2="140" stroke="#1C2B3A" stroke-width="2.5"/>
+      <line x1="140" y1="10" x2="160" y2="190" stroke="#7B4F9E" stroke-width="2.5"/>
+      <path d="M 148,60 A 20,20 0 0,0 152,80" fill="rgba(217,79,61,0.25)" stroke="#D94F3D" stroke-width="2"/>
+      <path d="M 152,120 A 20,20 0 0,0 156,140" fill="rgba(217,79,61,0.25)" stroke="#D94F3D" stroke-width="2"/>
+      <text x="130" y="80" font-family="Playfair Display,serif" font-size="14" fill="#D94F3D" font-weight="700">c</text>
+      <text x="130" y="132" font-family="Playfair Display,serif" font-size="14" fill="#D94F3D" font-weight="700">d</text>
+      <text x="150" y="196" font-family="Nunito,sans-serif" font-size="13" fill="#1C2B3A" font-weight="700" text-anchor="middle">c + d = 180°</text>
+    </svg>`
+  }
+};
+function showPara(key, btn) {
+  document.querySelectorAll('.para-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  const d = paraData[key];
+  document.getElementById('paraContent').innerHTML = `
+    <div style="background:${d.bg};border-left:5px solid ${d.color};border-radius:12px;padding:0.9rem 1.1rem;margin-bottom:0.8rem;">
+      <div style="font-weight:800;color:${d.color};font-size:1rem;margin-bottom:4px;">${d.label}</div>
+      <div style="font-size:0.9rem;color:#354A5E;line-height:1.7;">${d.desc}</div>
+      <div style="margin-top:8px;display:inline-flex;align-items:center;gap:8px;">
+        <span style="font-size:0.78rem;font-weight:800;color:${d.color};">RULE:</span>
+        <span style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;color:${d.color};">${d.rule}</span>
+      </div>
+    </div>
+    <div class="dia-wrap">${d.svg}</div>
+  `;
+}
+showPara('corresponding', document.querySelector('.para-tab.active'));
+
+// ── PRACTICE ──
+function checkPr(n, ans, hint) {
+  const val = parseInt(document.getElementById('pr' + n).value);
+  const fb = document.getElementById('pfb' + n);
+  if (isNaN(val)) { fb.textContent = '⚠️ Please type a number first.'; fb.className = 'pq-fb err'; return; }
+  if (val === ans) {
+    fb.innerHTML = '✅ Correct! Well done!';
+    fb.className = 'pq-fb ok';
+  } else {
+    fb.innerHTML = `❌ Not quite. Hint: ${hint}`;
+    fb.className = 'pq-fb err';
+  }
+}
+
+// ── QUIZ ──
+const Qs = [
+  { q:'Angles on a straight line always add up to:', opts:['90°','180°','270°','360°'], ans:1 },
+  { q:'All the angles around a single point add up to:', opts:['180°','270°','360°','90°'], ans:2 },
+  { q:'When two lines cross, the vertically opposite angles are:', opts:['Supplementary (add to 180°)','Equal','Complementary (add to 90°)','Always 90° each'], ans:1 },
+  { q:'The angles inside any triangle add up to:', opts:['90°','180°','270°','360°'], ans:1 },
+  { q:'The angles inside any quadrilateral add up to:', opts:['180°','270°','360°','90°'], ans:2 },
+  { q:'An isosceles triangle has a top angle of 80°. What is each base angle?', opts:['80°','100°','50°','40°'], ans:2 },
+  { q:'A right-angled triangle has one angle of 42°. The third angle is:', opts:['42°','48°','58°','52°'], ans:1 },
+  { q:'In a parallelogram, opposite angles are:', opts:['Right angles','Equal','Supplementary','Unequal'], ans:1 },
+  { q:'Alternate angles in parallel lines are:', opts:['Equal','Add to 180°','Add to 90°','Always 45°'], ans:0 },
+  { q:'Co-interior angles in parallel lines add up to:', opts:['90°','180°','360°','270°'], ans:1 },
+  { q:'Three angles in a quadrilateral are 75°, 110°, and 95°. The fourth is:', opts:['80°','85°','90°','70°'], ans:0 },
+  { q:'An equilateral triangle has all angles equal to:', opts:['45°','90°','60°','30°'], ans:2 }
+];
+let qi=0, sc=0, answered=false;
+function loadQ() {
+  answered = false;
+  const q = Qs[qi];
+  document.getElementById('qTag').textContent = `Question ${qi+1} of ${Qs.length}`;
+  document.getElementById('quizQ').textContent = q.q;
+  document.getElementById('qfb').textContent = '';
+  document.getElementById('nxtBtn').disabled = true;
+  document.getElementById('qprog').textContent = `Score: ${sc} / ${Qs.length}`;
+  const opts = document.getElementById('quizOpts');
+  opts.innerHTML = '';
+  q.opts.forEach((o, i) => {
+    const b = document.createElement('button');
+    b.className = 'qbtn'; b.textContent = o;
+    b.onclick = () => pickQ(i, b);
+    opts.appendChild(b);
+  });
+}
+function pickQ(i, btn) {
+  if (answered) return;
+  answered = true;
+  const q = Qs[qi];
+  document.querySelectorAll('.qbtn').forEach(b => b.disabled = true);
+  if (i === q.ans) {
+    btn.classList.add('correct'); sc++;
+    document.getElementById('scoreD').textContent = sc + ' ★';
+    document.getElementById('qfb').innerHTML = '✅ Correct!';
+    document.getElementById('qfb').style.color = 'var(--green)';
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.qbtn')[q.ans].classList.add('correct');
+    document.getElementById('qfb').innerHTML = '❌ Not quite — see the highlighted answer.';
+    document.getElementById('qfb').style.color = 'var(--red)';
+  }
+  document.getElementById('nxtBtn').disabled = false;
+}
+function nextQ() {
+  qi++;
+  if (qi >= Qs.length) { showEnd(); return; }
+  loadQ();
+}
+function showEnd() {
+  document.getElementById('quizMain').style.display = 'none';
+  document.getElementById('quizEnd').style.display = 'block';
+  const pct = sc / Qs.length;
+  let emoji, stars, msg;
+  if (pct >= 0.9) { emoji = '🏆'; stars = '★★★'; msg = `${sc}/${Qs.length} — Outstanding! You've mastered geometry!`; }
+  else if (pct >= 0.6) { emoji = '⭐'; stars = '★★☆'; msg = `${sc}/${Qs.length} — Good effort! Review the tabs you found tricky.`; }
+  else { emoji = '💪'; stars = '★☆☆'; msg = `${sc}/${Qs.length} — Keep going! Go through the angle rules again.`; }
+  document.getElementById('eEmoji').textContent = emoji;
+  document.getElementById('eStars').textContent = stars;
+  document.getElementById('eMsg').textContent = msg;
+}
+function restartQuiz() {
+  qi = 0; sc = 0;
+  document.getElementById('scoreD').textContent = '0 ★';
+  document.getElementById('quizMain').style.display = 'block';
+  document.getElementById('quizEnd').style.display = 'none';
+  loadQ();
+}
+loadQ();
+</script>
+</body>
+</html>
